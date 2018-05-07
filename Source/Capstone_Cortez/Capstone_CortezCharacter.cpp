@@ -7,6 +7,7 @@
 #include "Kismet/HeadMountedDisplayFunctionLibrary.h"
 #include "Capstone_CortezCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ACapstone_CortezCharacter
@@ -25,6 +26,8 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
+
+	FName headSocket = "headSocket";
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
@@ -37,7 +40,7 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-	// Create a follow camera
+	// Create a follow cameraf
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
@@ -179,19 +182,20 @@ void ACapstone_CortezCharacter::SetCameraMode(CharacterCameraMode::Type newCamer
 
 void ACapstone_CortezCharacter::UpdateForCameraMode()
 {
+	
 	// Changes visibility of first and third person meshes
 	switch (CameraModeEnum)
 	{
 	case CharacterCameraMode::ThirdPersonDefault:
 		IsResetting = false;
-		FollowCamera->AttachTo(CameraBoom, USpringArmComponent::SocketName);
+		CameraBoom->AttachTo(GetMesh(), "headSocket");
 		CameraBoom->TargetArmLength = 300.f;
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationYaw = true;
 		bUseControllerRotationRoll = false;
 		break;
 	case CharacterCameraMode::FirstPerson:
-		FollowCamera->AttachTo(CameraBoom, USpringArmComponent::SocketName);
+		CameraBoom->AttachTo(GetMesh(), "headSocket");
 		CameraBoom->TargetArmLength = 0.f;
 		IsResetting = false;
 		bUseControllerRotationPitch = false;
