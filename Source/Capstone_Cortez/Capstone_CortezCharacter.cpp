@@ -162,6 +162,7 @@ void ACapstone_CortezCharacter::MoveRight(float Value)
 //////////////////////////////////////////////////////////////////////////
 // Camera Mode
 
+// Cycles the camera between 1st and 3rd person
 void ACapstone_CortezCharacter::CycleCamera()
 {
 
@@ -171,6 +172,7 @@ void ACapstone_CortezCharacter::CycleCamera()
 	SetCameraMode((CharacterCameraMode::Type) newCameraMode);
 }
 
+// Set the camera mode
 void ACapstone_CortezCharacter::SetCameraMode(CharacterCameraMode::Type newCameraMode)
 {
 	CameraModeEnum = newCameraMode;
@@ -179,7 +181,7 @@ void ACapstone_CortezCharacter::SetCameraMode(CharacterCameraMode::Type newCamer
 }
 
 
-
+// Determines camera values for 3rd or 1st person
 void ACapstone_CortezCharacter::UpdateForCameraMode()
 {
 	
