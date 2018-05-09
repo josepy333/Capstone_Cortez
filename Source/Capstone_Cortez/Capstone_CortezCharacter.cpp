@@ -193,7 +193,7 @@ void ACapstone_CortezCharacter::UpdateForCameraMode()
 		CameraBoom->AttachTo(GetMesh(), "headSocket");
 		CameraBoom->TargetArmLength = 300.f;
 		bUseControllerRotationPitch = false;
-		bUseControllerRotationYaw = true;
+		bUseControllerRotationYaw = false;
 		bUseControllerRotationRoll = false;
 		break;
 	case CharacterCameraMode::FirstPerson:
