@@ -9,6 +9,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Engine/SkeletalMeshSocket.h"
 
+
 //////////////////////////////////////////////////////////////////////////
 // ACapstone_CortezCharacter
 
@@ -55,6 +56,9 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 
 	IsAutoReset = false;
 	AutoResetSpeed = .15f;
+
+	GrowMaxHoldTime = 10.0f;
+	ShrinkMaxHoldTime = 10.0f;
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -68,6 +72,12 @@ void ACapstone_CortezCharacter::SetupPlayerInputComponent(class UInputComponent*
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	
+	// Grow and Shrink
+	PlayerInputComponent->BindAction("Grow", IE_Pressed, this, &ACapstone_CortezCharacter::Grow);
+	PlayerInputComponent->BindAction("Grow", IE_Released, this, &ACapstone_CortezCharacter::StopGrowing);
+	PlayerInputComponent->BindAction("Shrink", IE_Pressed, this, &ACapstone_CortezCharacter::Shrink);
+	PlayerInputComponent->BindAction("Shrink", IE_Released, this, &ACapstone_CortezCharacter::StopShrinking);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ACapstone_CortezCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ACapstone_CortezCharacter::MoveRight);
@@ -100,11 +110,15 @@ void ACapstone_CortezCharacter::OnResetVR()
 void ACapstone_CortezCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
 {
 		Jump();
+		Grow();
+		Shrink();
 }
 
 void ACapstone_CortezCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
 {
 		StopJumping();
+		StopGrowing();
+		StopShrinking();
 }
 
 void ACapstone_CortezCharacter::TurnAtRate(float Rate)
@@ -158,6 +172,233 @@ void ACapstone_CortezCharacter::MoveRight(float Value)
 		AddMovementInput(GetActorRightVector(), Value);
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Grow Functions
+
+bool ACapstone_CortezCharacter::CanGrow() const
+{
+	return CanGrowInternal();
+}
+
+bool ACapstone_CortezCharacter::CanGrowInternal_Implementation() const
+{
+	// Ensure the character isn't currently crouched.
+	bool bCanGrow = true;									//!bIsCrouched;
+
+	/* Ensure that the CharacterMovement state is valid
+	bCanGrow &=  CharacterMovement &&
+		CharacterMovement->IsJumpAllowed() &&
+		!CharacterMovement->bWantsToCrouch &&
+		// Can only grow from the ground, or if already falling.
+		(CharacterMovement->IsMovingOnGround() || CharacterMovement->IsFalling());*/
+
+	if (bCanGrow)
+	{
+		// Ensure GrowHoldTime is valid.
+		if (GetGrowMaxHoldTime() <= 0.0f)
+		{
+			bCanGrow = false;
+		}
+	}
+
+	return bCanGrow;
+}
+
+void ACapstone_CortezCharacter::OnGrow_Implementation()
+{
+}
+
+bool ACapstone_CortezCharacter::IsGrowProvidingForce() const
+{
+	return (bPressedGrow && GrowKeyHoldTime > 0.0f && GrowKeyHoldTime < GrowMaxHoldTime);
+}
+
+void ACapstone_CortezCharacter::Grow()
+{
+	bPressedGrow = true;
+	GrowKeyHoldTime = 0.0f;
+	DoGrow();
+}
+
+void ACapstone_CortezCharacter::StopGrowing()
+{
+	bPressedGrow = false;
+	ResetGrowState();
+}
+
+bool ACapstone_CortezCharacter::DoGrow()
+{
+	if (bPressedGrow && CanGrow())
+	{
+		FVector currentScale = GetActorScale3D();
+		if ((int)GrowKeyHoldTime % 2 == 0)
+			SetActorScale3D(currentScale + .05);
+		return true;
+	}
+
+	return false;
+}
+
+void ACapstone_CortezCharacter::CheckGrowInput(float DeltaTime)
+{
+	if (Controller != NULL)
+	{
+		if (bPressedGrow)
+		{
+			// Increment our timer first so calls to IsJumpProvidingForce() will return true
+			GrowKeyHoldTime += DeltaTime;
+
+
+			const bool bDidGrow = CanGrow() && DoGrow();
+			if (!bWasGrowing && bDidGrow)
+			{
+				OnGrow();
+			}
+
+			bWasGrowing = bDidGrow;
+		}
+
+		else if (bWasGrowing)
+		{
+			ResetGrowState();
+		}
+	}
+}
+
+void ACapstone_CortezCharacter::ResetGrowState()
+{
+	bWasGrowing = false;
+	GrowKeyHoldTime = 0.0f;
+}
+
+void ACapstone_CortezCharacter::ClearGrowInput()
+{
+	// Don't disable bPressedGrow right away if it's still held
+	if (bPressedGrow && (GrowKeyHoldTime >= GetGrowMaxHoldTime()))
+	{
+		bPressedGrow = false;
+	}
+}
+
+float ACapstone_CortezCharacter::GetGrowMaxHoldTime() const
+{
+	return GrowMaxHoldTime;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Shrink Functions
+
+bool ACapstone_CortezCharacter::CanShrink() const
+{
+	return CanShrinkInternal();
+}
+
+bool ACapstone_CortezCharacter::CanShrinkInternal_Implementation() const
+{
+	// Ensure the character isn't currently crouched.
+	bool bCanShrink = true;										//!bIsCrouched;
+
+	/* Ensure that the CharacterMovement state is valid
+	bCanShrink &=  CharacterMovement &&
+	CharacterMovement->IsJumpAllowed() &&
+	!CharacterMovement->bWantsToCrouch &&
+	// Can only Shrink from the ground, or if already falling.
+	(CharacterMovement->IsMovingOnGround() || CharacterMovement->IsFalling());*/
+
+	if (bCanShrink)
+	{
+		// Ensure ShrinkHoldTime is valid.
+		if (GetShrinkMaxHoldTime() <= 0.0f)
+		{
+			bCanShrink = false;
+		}
+	}
+
+	return bCanShrink;
+}
+
+void ACapstone_CortezCharacter::OnShrink_Implementation()
+{
+}
+
+bool ACapstone_CortezCharacter::IsShrinkProvidingForce() const
+{
+	return (bPressedShrink && ShrinkKeyHoldTime > 0.0f && ShrinkKeyHoldTime < ShrinkMaxHoldTime);
+}
+
+void ACapstone_CortezCharacter::Shrink()
+{
+	bPressedShrink = true;
+	ShrinkKeyHoldTime = 0.0f;
+	DoShrink();
+}
+
+void ACapstone_CortezCharacter::StopShrinking()
+{
+	bPressedShrink = false;
+	ResetShrinkState();
+}
+
+bool ACapstone_CortezCharacter::DoShrink()
+{
+	if (bPressedShrink && CanShrink())
+	{
+		FVector currentScale = GetActorScale3D();
+		if ((int)ShrinkKeyHoldTime % 2 == 0)
+			SetActorScale3D(currentScale - .05);
+		return true;
+	}
+
+	return false;
+}
+
+void ACapstone_CortezCharacter::CheckShrinkInput(float DeltaTime)
+{
+	if (Controller != NULL)
+	{
+		if (bPressedShrink)
+		{
+			// Increment our timer first so calls to IsShrinkProvidingForce() will return true
+			ShrinkKeyHoldTime += DeltaTime;
+
+
+			const bool bDidShrink = CanShrink() && DoShrink();
+			if (!bWasShrinking && bDidShrink)
+			{
+				OnShrink();
+			}
+
+			bWasShrinking = bDidShrink;
+		}
+
+		else if (bWasShrinking)
+		{
+			ResetShrinkState();
+		}
+	}
+}
+
+void ACapstone_CortezCharacter::ResetShrinkState()
+{
+	bWasShrinking = false;
+	ShrinkKeyHoldTime = 0.0f;
+}
+
+void ACapstone_CortezCharacter::ClearShrinkInput()
+{
+	// Don't disable bPressedShrink right away if it's still held
+	if (bPressedShrink && (ShrinkKeyHoldTime >= GetShrinkMaxHoldTime()))
+	{
+		bPressedShrink = false;
+	}
+}
+
+float ACapstone_CortezCharacter::GetShrinkMaxHoldTime() const
+{
+	return ShrinkMaxHoldTime;
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // Camera Mode

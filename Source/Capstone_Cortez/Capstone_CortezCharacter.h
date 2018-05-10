@@ -4,7 +4,9 @@
 // Copyright 1998-2016 Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "GameFramework/Character.h"
+#include "GameFramework/MovementComponent.h"
 #include "Capstone_CortezCharacter.generated.h"
+
 
 
 UENUM(BlueprintType)
@@ -99,6 +101,211 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SmoothFollowCameraReset)
 	float AutoResetSpeed;
 
+	/** When true, player wants to grow */
+	UPROPERTY(BlueprintReadOnly, Category = Character)
+	uint32 bPressedGrow:1;
+
+	/** When true, player wants to shrink */
+	UPROPERTY(BlueprintReadOnly, Category = Character)
+		uint32 bPressedShrink:1;
+
+	/**
+	* Grow key Held Time.
+	* This is the time that the player has held the grow key, in seconds.
+	*/
+	UPROPERTY(Transient, BlueprintReadOnly, VisibleInstanceOnly, Category = Character)
+		float GrowKeyHoldTime;
+
+	/**
+	* Shrink key Held Time.
+	* This is the time that the player has held the shrink key, in seconds.
+	*/
+	UPROPERTY(Transient, BlueprintReadOnly, VisibleInstanceOnly, Category = Character)
+		float ShrinkKeyHoldTime;
+
+	/**
+	* The max time the grow key can be held.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character, Meta = (ClampMin = 0.0, UIMin = 0.0))
+		float GrowMaxHoldTime;
+
+	/**
+	* The max time the shrink key can be held.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character, Meta = (ClampMin = 0.0, UIMin = 0.0))
+		float ShrinkMaxHoldTime;
+	
+	/**
+	* The max grow size.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
+		FVector GrowMaxSize;
+
+	/**
+	* The max shrink size.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
+		FVector ShrinkMaxSize;
+
+	// Tracks whether or not the character was already growing last frame.
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Character)
+		uint32 bWasGrowing : 1;
+
+	// Tracks whether or not the character was already shrinking last frame.
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Character)
+		uint32 bWasShrinking : 1;
+
+	/**
+	* Make the character grow on the next update.
+	*/
+	UFUNCTION(BlueprintCallable, Category = Character)
+		virtual void Grow();
+
+	/**
+	* Stop the character from growing on the next update.
+	* Call this from an input event (such as a button 'up' event) to cease applying
+	* grow. If this is not called, then grow will be applied
+	* until GrowMaxSize is reached.
+	*/
+	UFUNCTION(BlueprintCallable, Category = Character)
+		virtual void StopGrowing();
+
+	/**
+	* Make the character shrink on the next update.
+	*/
+	UFUNCTION(BlueprintCallable, Category = Character)
+		virtual void Shrink();
+
+	/**
+	* Perform grow. Called by Character when a grow has been detected because Character->bPressedGrow was true. Checks CanGrow().
+	* Note that you should usually trigger a grow through Character::Grow() instead.
+	* @return	True if the grow was triggered successfully.
+	*/
+	virtual bool DoGrow();
+
+	/**
+	* Perform shrink. Called by Character when a shrink has been detected because Character->bPressedShrink was true. Checks CanShrink().
+	* Note that you should usually trigger a shrink through Character::Shrink() instead.
+	* @return	True if the shrink was triggered successfully.
+	*/
+	virtual bool DoShrink();
+
+	/**
+	* Stop the character from shrinking on the next update.
+	* Call this from an input event (such as a button 'up' event) to cease applying
+	* shrink. If this is not called, then shrink will be applied
+	* until ShrinkMaxSize is reached.
+	*/
+	UFUNCTION(BlueprintCallable, Category = Character)
+		virtual void StopShrinking();
+
+	/**
+	* Check if the character can grow in the current state.
+	*
+	* The default implementation may be overridden or extended by implementing the custom CanJump event in Blueprints.
+	*
+	* @Return Whether the character can jump in the current state.
+	*/
+	UFUNCTION(BlueprintCallable, Category = Character)
+		bool CanGrow() const;
+
+protected:
+	/**
+	* Customizable event to check if the character can grow in the current state.
+	* Default implementation returns true if the character is on the ground and not crouching,
+	* has a valid CharacterMovementComponent and CanEverGrow() returns true.f
+	* As well as returning true when on the ground, it also returns true when GetMaxGrowTime is more
+	* than zero and IsGrowing returns true.
+	*
+	*
+	* @Return Whether the character can grow in the current state.
+	*/
+
+	UFUNCTION(BlueprintNativeEvent, Category = Character, meta = (DisplayName = "CanGrow"))
+		bool CanGrowInternal() const;
+	virtual bool CanGrowInternal_Implementation() const;
+
+	void ResetGrowState();
+
+protected:
+	/**
+	* Customizable event to check if the character can Shrink in the current state.
+	* Default implementation returns true if the character is on the ground and not crouching,
+	* has a valid CharacterMovementComponent and CanEverShrink() returns true.
+	* As well as returning true when on the ground, it also returns true when GetMaxShrinkTime is more
+	* than zero and IsShrinking returns true.
+	*
+	*
+	* @Return Whether the character can Shrink in the current state.
+	*/
+
+	UFUNCTION(BlueprintNativeEvent, Category = Character, meta = (DisplayName = "CanShrink"))
+		bool CanShrinkInternal() const;
+	virtual bool CanShrinkInternal_Implementation() const;
+
+	void ResetShrinkState();
+
+public:
+
+	/**
+	* Check if the character can shrink in the current state.
+	*
+	* The default implementation may be overridden or extended by implementing the custom CanJump event in Blueprints.
+	*
+	* @Return Whether the character can jump in the current state.
+	*/
+	UFUNCTION(BlueprintCallable, Category = Character)
+		bool CanShrink() const;
+
+	/** Trigger grow if grow button has been pressed. */
+	virtual void CheckGrowInput(float DeltaTime);
+
+	/** Reset input state after having checked input. */
+	virtual void ClearGrowInput();
+
+	/** Trigger shrink if shrink button has been pressed. */
+	virtual void CheckShrinkInput(float DeltaTime);
+
+	/** Reset input state after having checked input. */
+	virtual void ClearShrinkInput();
+
+	/** Event fired when the character has just started growing */
+	UFUNCTION(BlueprintNativeEvent, Category = Character)
+	void OnGrow();
+	virtual void OnGrow_Implementation();
+
+	/**
+	* True if grow is actively providing a force, such as when the grow key is held and the time it has been held is less than GrowMaxHoldTime.
+	*/
+	UFUNCTION(BlueprintCallable, Category = Character)
+	virtual bool IsGrowProvidingForce() const;
+
+	/** Event fired when the character has just started shrinking */
+	UFUNCTION(BlueprintNativeEvent, Category = Character)
+	void OnShrink();
+	virtual void OnShrink_Implementation();
+
+	/**
+	* True if shrink is actively providing a force, such as when the shrink key is held and the time it has been held is less than ShrinkMaxHoldTime.
+	*/
+	UFUNCTION(BlueprintCallable, Category = Character)
+		virtual bool IsShrinkProvidingForce() const;
+
+	/**
+	* Get the maximum grow time for the character.
+	*
+	* @return Maximum grow time for the character
+	*/
+	virtual float GetGrowMaxHoldTime() const;
+
+	/**
+	* Get the maximum shrink time for the character.
+	*
+	* @return Maximum shrink time for the character
+	*/
+	virtual float GetShrinkMaxHoldTime() const;
+
+
 protected:
 	/** Keeps track of whether the camera is currently being reset */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraInternal)
@@ -139,6 +346,7 @@ protected:
 
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
+
 
 protected:
 	// APawn interface
