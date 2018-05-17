@@ -233,7 +233,10 @@ bool ACapstone_CortezCharacter::DoGrow()
 	{
 		FVector currentScale = GetActorScale3D();
 		if ((int)GrowKeyHoldTime % 2 == 0)
-			SetActorScale3D(currentScale + .05);
+		{
+			SetActorScale3D(currentScale * 2);
+		}
+			
 		return true;
 	}
 
@@ -346,7 +349,7 @@ bool ACapstone_CortezCharacter::DoShrink()
 	{
 		FVector currentScale = GetActorScale3D();
 		if ((int)ShrinkKeyHoldTime % 2 == 0)
-			SetActorScale3D(currentScale - .05);
+			SetActorScale3D(currentScale / 2);
 		return true;
 	}
 
