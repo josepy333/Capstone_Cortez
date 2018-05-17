@@ -18,6 +18,9 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
@@ -57,10 +60,33 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	IsAutoReset = false;
 	AutoResetSpeed = .15f;
 
-	GrowMaxHoldTime = 10.0f;
-	ShrinkMaxHoldTime = 10.0f;
+	GrowMaxHoldTime = 10;
+	ShrinkMaxHoldTime = 10;
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+}
+
+// Called when the game starts or when spawned
+void ACapstone_CortezCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+}
+
+// Called every frame
+void ACapstone_CortezCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	
+	// Ability to have seamless growth
+	if (bPressedGrow)
+	{
+		GrowthFactor += DeltaTime / 2.0f;
+		GrowthFactor = FMath::Clamp<float>(GrowthFactor, 0.0f, 5.0f);
+		FVector currentScale = GetActorScale3D();
+		SetActorScale3D(currentScale + (GrowthFactor*.01f));
+	}
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -218,7 +244,8 @@ void ACapstone_CortezCharacter::Grow()
 {
 	bPressedGrow = true;
 	GrowKeyHoldTime = 0.0f;
-	DoGrow();
+	//DoGrow();
+	//CheckGrowInput(GrowKeyHoldTime);
 }
 
 void ACapstone_CortezCharacter::StopGrowing()
@@ -256,7 +283,7 @@ void ACapstone_CortezCharacter::CheckGrowInput(float DeltaTime)
 			const bool bDidGrow = CanGrow() && DoGrow();
 			if (!bWasGrowing && bDidGrow)
 			{
-				OnGrow();
+				DoGrow();
 			}
 
 			bWasGrowing = bDidGrow;

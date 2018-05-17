@@ -63,6 +63,15 @@ class ACapstone_CortezCharacter : public ACharacter
 public:
 	ACapstone_CortezCharacter();
 
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:
+
+	// Called every frame
+	virtual void Tick(float DeltaSeconds) override;
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -108,6 +117,9 @@ public:
 	/** When true, player wants to shrink */
 	UPROPERTY(BlueprintReadOnly, Category = Character)
 		uint32 bPressedShrink:1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
+		float GrowthFactor;
 
 	/**
 	* Grow key Held Time.
