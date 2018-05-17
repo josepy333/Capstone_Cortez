@@ -60,6 +60,8 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	IsAutoReset = false;
 	AutoResetSpeed = .15f;
 
+	GrowthFactor = 0.5f;
+
 	GrowMaxHoldTime = 10;
 	ShrinkMaxHoldTime = 10;
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
@@ -82,7 +84,7 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 	if (bPressedGrow)
 	{
 		GrowthFactor += DeltaTime / 2.0f;
-		GrowthFactor = FMath::Clamp<float>(GrowthFactor, 0.0f, 5.0f);
+		GrowthFactor = FMath::Clamp<float>(GrowthFactor, 0.0f, 2.0f);
 		FVector currentScale = GetActorScale3D();
 		SetActorScale3D(currentScale + (GrowthFactor*.01f));
 	}
@@ -251,6 +253,7 @@ void ACapstone_CortezCharacter::Grow()
 void ACapstone_CortezCharacter::StopGrowing()
 {
 	bPressedGrow = false;
+	GrowthFactor = 0.5f;
 	ResetGrowState();
 }
 
