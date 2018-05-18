@@ -155,13 +155,13 @@ public:
 	* The max grow size.
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
-		FVector GrowMaxSize;
+		float GrowMaxSize;
 
 	/**
-	* The max shrink size.
+	* The min shrink size.
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
-		FVector ShrinkMaxSize;
+		float ShrinkMinSize;
 
 	// Tracks whether or not the character was already growing last frame.
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Transient, Category = Character)

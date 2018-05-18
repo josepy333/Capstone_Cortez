@@ -61,6 +61,8 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	AutoResetSpeed = .15f;
 
 	GrowthFactor = 0.5f;
+	GrowMaxSize = 10.0f;
+	ShrinkMinSize = 0.25f;
 
 	GrowMaxHoldTime = 10;
 	ShrinkMaxHoldTime = 10;
@@ -81,10 +83,19 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	FVector currentScale = GetActorScale3D();						// Get the current scale of the character
-	currentScale = currentScale.GetClampedToSize(0.25f, 10.0f);		// Add constraints to scale
+	currentScale = currentScale.GetClampedToSize(ShrinkMinSize, GrowMaxSize);		// Add constraints to scale
+
+	float currentBoomLength = CameraBoom->TargetArmLength;			// Get the current camera boom length
 	
 	// Ability to have seamless growth
-	if (bPressedGrow)
+	if (bPressedGrow && IsThirdPersonMode() && currentScale.Size() < GrowMaxSize - 0.01f)
+	{
+		GrowthFactor += DeltaTime / 2.0f;
+		GrowthFactor = FMath::Clamp<float>(GrowthFactor, 0.0f, 2.0f);
+		SetActorScale3D(currentScale + (GrowthFactor*.01f));
+		CameraBoom->TargetArmLength = (currentBoomLength + (GrowthFactor*2.0f));
+	}
+	else if(bPressedGrow && IsFirstPersonMode())
 	{
 		GrowthFactor += DeltaTime / 2.0f;
 		GrowthFactor = FMath::Clamp<float>(GrowthFactor, 0.0f, 2.0f);
@@ -92,7 +103,14 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 	}
 
 	// Ability to have seamless shrink
-	if (bPressedShrink)
+	if (bPressedShrink && IsThirdPersonMode() && currentScale.Size() > ShrinkMinSize + 0.01f)
+	{
+		ShrinkFactor += DeltaTime / 2.0f;
+		ShrinkFactor = FMath::Clamp<float>(ShrinkFactor, 0.0f, 2.0f);
+		SetActorScale3D(currentScale - (ShrinkFactor*.01f));
+		CameraBoom->TargetArmLength = (currentBoomLength - (ShrinkFactor*2.0f));
+	}
+	else if (bPressedShrink && IsFirstPersonMode())
 	{
 		ShrinkFactor += DeltaTime / 2.0f;
 		ShrinkFactor = FMath::Clamp<float>(ShrinkFactor, 0.0f, 2.0f);
