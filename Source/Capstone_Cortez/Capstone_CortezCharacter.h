@@ -80,7 +80,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-
+	/** Base Actor Scale */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
+	float NormalSize;
 
 	/** Current camera mode */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)

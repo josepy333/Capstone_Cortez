@@ -8,6 +8,8 @@
 #include "Capstone_CortezCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "EngineGlobals.h"
+#include "Engine.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -62,6 +64,7 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	IsAutoReset = false;
 	AutoResetSpeed = .15f;
 
+	NormalSize = 1.0f;
 	GrowthFactor = 0.5f;
 	GrowMaxSize = 10.0f;
 	ShrinkMinSize = 0.25f;
@@ -87,39 +90,68 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 	FVector currentScale = GetActorScale3D();						// Get the current scale of the character
 	currentScale = currentScale.GetClampedToSize(ShrinkMinSize, GrowMaxSize);		// Add constraints to scale
 	
+	/*******************         VARIABLE TRACKER FOR ACTOR SIZE ****************************************************************/
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Current Scale %f"), currentScale.GetMax()));
+
+	/*******************************************************************************************************************************/
+	
 	// Ability to have seamless growth
-	if (bPressedGrow && IsThirdPersonMode() && currentScale.Size() < GrowMaxSize - 0.01f)
+	if (bPressedGrow && IsThirdPersonMode() && currentScale.Size() < GrowMaxSize -.001)
 	{
-		GrowthFactor += DeltaTime / 2.0f;
-		GrowthFactor = FMath::Clamp<float>(GrowthFactor, 0.0f, 2.0f);
+		GrowthFactor = 1.0f;
+
 		SetActorScale3D(currentScale + (GrowthFactor*.01f));
 		CurrentBoomLength3P = CurrentBoomLength3P + (GrowthFactor*2.0f);			//Needed to adjust 3rd person camera boom
 		CameraBoom->TargetArmLength = CurrentBoomLength3P;
+		
+		// Increase movement speed when larger than normal
+		if (currentScale.GetMax() > NormalSize)
+		{
+			GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed + (GrowthFactor*4.0f);
+		}
 	}
-	else if(bPressedGrow && IsFirstPersonMode() && currentScale.Size() < GrowMaxSize - 0.01f)
+	else if(bPressedGrow && IsFirstPersonMode() && currentScale.Size() < GrowMaxSize -.001)
 	{
-		GrowthFactor += DeltaTime / 2.0f;
-		GrowthFactor = FMath::Clamp<float>(GrowthFactor, 0.0f, 2.0f);
+		GrowthFactor = 1.0f;
 		SetActorScale3D(currentScale + (GrowthFactor*.01f));
 		CurrentBoomLength3P = CurrentBoomLength3P + (GrowthFactor*2.0f);			//Needed to adjust 3rd person camera boom
+		
+		// Increase movement speed when larger than normal
+		if (currentScale.GetMax() > NormalSize)
+		{
+			GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed + (GrowthFactor*4.0f);
+		}
 	}
 
 	// Ability to have seamless shrink
-	if (bPressedShrink && IsThirdPersonMode() && currentScale.Size() > ShrinkMinSize + 0.01f)
+	if (bPressedShrink && IsThirdPersonMode() && currentScale.Size() >= ShrinkMinSize)
 	{
-		ShrinkFactor += DeltaTime / 2.0f;
-		ShrinkFactor = FMath::Clamp<float>(ShrinkFactor, 0.0f, 2.0f);
+		ShrinkFactor = 1.0f;
 		SetActorScale3D(currentScale - (ShrinkFactor*.01f));
 		CurrentBoomLength3P = CurrentBoomLength3P - (ShrinkFactor*2.0f);			//Needed to adjust 3rd person camera boom
 		CameraBoom->TargetArmLength = CurrentBoomLength3P;
+
+		// Decrease movement speed when larger than normal
+		if (currentScale.GetMax() > NormalSize)
+		{
+			GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed - (ShrinkFactor*4.0f);
+		}
 	}
-	else if (bPressedShrink && IsFirstPersonMode() && currentScale.Size() > ShrinkMinSize + 0.01f)
+	else if (bPressedShrink && IsFirstPersonMode() && currentScale.Size() >= ShrinkMinSize)
 	{
-		ShrinkFactor += DeltaTime / 2.0f;
-		ShrinkFactor = FMath::Clamp<float>(ShrinkFactor, 0.0f, 2.0f);
+		ShrinkFactor = 1.0f;
 		SetActorScale3D(currentScale - (ShrinkFactor*.01f));
 		CurrentBoomLength3P = CurrentBoomLength3P - (ShrinkFactor*2.0f);			//Needed to adjust 3rd person camera boom
+
+		// Decrease movement speed when larger than normal
+		if (currentScale.GetMax() > NormalSize)
+		{
+			GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed - (ShrinkFactor*4.0f);
+		}
 	}
+
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
