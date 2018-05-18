@@ -118,8 +118,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = Character)
 		uint32 bPressedShrink:1;
 
+	/** The factor for growth*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
 		float GrowthFactor;
+	/**The factor for shrinking*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
+		float ShrinkFactor;
 
 	/**
 	* Grow key Held Time.

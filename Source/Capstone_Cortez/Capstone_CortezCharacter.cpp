@@ -89,6 +89,14 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 		SetActorScale3D(currentScale + (GrowthFactor*.01f));
 	}
 
+	// Ability to have seamless shrink
+	if (bPressedShrink)
+	{
+		ShrinkFactor += DeltaTime / 2.0f;
+		ShrinkFactor = FMath::Clamp<float>(ShrinkFactor, 0.0f, 2.0f);
+		FVector currentScale = GetActorScale3D();
+		SetActorScale3D(currentScale - (ShrinkFactor*.01f));
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -364,12 +372,13 @@ void ACapstone_CortezCharacter::Shrink()
 {
 	bPressedShrink = true;
 	ShrinkKeyHoldTime = 0.0f;
-	DoShrink();
+	//DoShrink();
 }
 
 void ACapstone_CortezCharacter::StopShrinking()
 {
 	bPressedShrink = false;
+	ShrinkFactor = 0.5f;
 	ResetShrinkState();
 }
 
