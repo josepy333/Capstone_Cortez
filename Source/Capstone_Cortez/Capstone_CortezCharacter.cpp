@@ -79,13 +79,15 @@ void ACapstone_CortezCharacter::BeginPlay()
 void ACapstone_CortezCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	FVector currentScale = GetActorScale3D();						// Get the current scale of the character
+	currentScale = currentScale.GetClampedToSize(0.25f, 10.0f);		// Add constraints to scale
 	
 	// Ability to have seamless growth
 	if (bPressedGrow)
 	{
 		GrowthFactor += DeltaTime / 2.0f;
 		GrowthFactor = FMath::Clamp<float>(GrowthFactor, 0.0f, 2.0f);
-		FVector currentScale = GetActorScale3D();
 		SetActorScale3D(currentScale + (GrowthFactor*.01f));
 	}
 
@@ -94,7 +96,6 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 	{
 		ShrinkFactor += DeltaTime / 2.0f;
 		ShrinkFactor = FMath::Clamp<float>(ShrinkFactor, 0.0f, 2.0f);
-		FVector currentScale = GetActorScale3D();
 		SetActorScale3D(currentScale - (ShrinkFactor*.01f));
 	}
 }
