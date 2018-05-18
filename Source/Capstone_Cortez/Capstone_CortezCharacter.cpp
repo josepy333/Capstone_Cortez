@@ -30,6 +30,8 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
+	// Default 3rd person boom length
+	CurrentBoomLength3P = 300.0f;
 
 	FName headSocket = "headSocket";
 	// Configure character movement
@@ -41,7 +43,7 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
+	CameraBoom->TargetArmLength = CurrentBoomLength3P; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create a follow cameraf
@@ -84,8 +86,6 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 
 	FVector currentScale = GetActorScale3D();						// Get the current scale of the character
 	currentScale = currentScale.GetClampedToSize(ShrinkMinSize, GrowMaxSize);		// Add constraints to scale
-
-	float currentBoomLength = CameraBoom->TargetArmLength;			// Get the current camera boom length
 	
 	// Ability to have seamless growth
 	if (bPressedGrow && IsThirdPersonMode() && currentScale.Size() < GrowMaxSize - 0.01f)
@@ -93,13 +93,15 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 		GrowthFactor += DeltaTime / 2.0f;
 		GrowthFactor = FMath::Clamp<float>(GrowthFactor, 0.0f, 2.0f);
 		SetActorScale3D(currentScale + (GrowthFactor*.01f));
-		CameraBoom->TargetArmLength = (currentBoomLength + (GrowthFactor*2.0f));
+		CurrentBoomLength3P = CurrentBoomLength3P + (GrowthFactor*2.0f);			//Needed to adjust 3rd person camera boom
+		CameraBoom->TargetArmLength = CurrentBoomLength3P;
 	}
-	else if(bPressedGrow && IsFirstPersonMode())
+	else if(bPressedGrow && IsFirstPersonMode() && currentScale.Size() < GrowMaxSize - 0.01f)
 	{
 		GrowthFactor += DeltaTime / 2.0f;
 		GrowthFactor = FMath::Clamp<float>(GrowthFactor, 0.0f, 2.0f);
 		SetActorScale3D(currentScale + (GrowthFactor*.01f));
+		CurrentBoomLength3P = CurrentBoomLength3P + (GrowthFactor*2.0f);			//Needed to adjust 3rd person camera boom
 	}
 
 	// Ability to have seamless shrink
@@ -108,13 +110,15 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 		ShrinkFactor += DeltaTime / 2.0f;
 		ShrinkFactor = FMath::Clamp<float>(ShrinkFactor, 0.0f, 2.0f);
 		SetActorScale3D(currentScale - (ShrinkFactor*.01f));
-		CameraBoom->TargetArmLength = (currentBoomLength - (ShrinkFactor*2.0f));
+		CurrentBoomLength3P = CurrentBoomLength3P - (ShrinkFactor*2.0f);			//Needed to adjust 3rd person camera boom
+		CameraBoom->TargetArmLength = CurrentBoomLength3P;
 	}
-	else if (bPressedShrink && IsFirstPersonMode())
+	else if (bPressedShrink && IsFirstPersonMode() && currentScale.Size() > ShrinkMinSize + 0.01f)
 	{
 		ShrinkFactor += DeltaTime / 2.0f;
 		ShrinkFactor = FMath::Clamp<float>(ShrinkFactor, 0.0f, 2.0f);
 		SetActorScale3D(currentScale - (ShrinkFactor*.01f));
+		CurrentBoomLength3P = CurrentBoomLength3P - (ShrinkFactor*2.0f);			//Needed to adjust 3rd person camera boom
 	}
 }
 
@@ -493,7 +497,7 @@ void ACapstone_CortezCharacter::UpdateForCameraMode()
 	case CharacterCameraMode::ThirdPersonDefault:
 		IsResetting = false;
 		CameraBoom->AttachTo(GetMesh(), "headSocket");
-		CameraBoom->TargetArmLength = 300.f;
+		CameraBoom->TargetArmLength = CurrentBoomLength3P;
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationYaw = false;
 		bUseControllerRotationRoll = false;

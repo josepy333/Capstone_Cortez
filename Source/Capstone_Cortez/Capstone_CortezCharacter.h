@@ -92,11 +92,15 @@ public:
 
 	/** Controls the follow camera turn speed. Only affects Third Person Follow mode */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SmoothFollowCamera)
-		float CameraFollowTurnRate;
+	float CameraFollowTurnRate;
 
 	/** Controls the speed that the camera resets in Third Person Follow mode */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SmoothFollowCamera)
-		float CameraResetSpeed;
+	float CameraResetSpeed;
+
+	/** Controls the 3rd person camera boom length */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	float CurrentBoomLength3P;
 	
 	/** Autoreset after idle */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SmoothFollowCameraReset)
