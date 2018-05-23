@@ -23,7 +23,6 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
-	SetCharacterScaleMode((CharacterScaleMode::Type) 1);
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
@@ -71,6 +70,8 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 
 	GrowMaxHoldTime = 10;
 	ShrinkMaxHoldTime = 10;
+
+	SetCharacterScaleMode((CharacterScaleMode::Type) 1);
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -91,7 +92,7 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 	
 	/*******************         VARIABLE TRACKER FOR ACTOR SIZE ****************************************************************/
 	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Current Scale %f"), currentScale.GetMax()));
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Current Scale %f Current Boom Length %f"), currentScale.GetMax(), CurrentBoomLength3P));
 
 	/*******************************************************************************************************************************/
 	
@@ -511,12 +512,12 @@ void ACapstone_CortezCharacter::StopShrinking()
 	ResetShrinkState();
 }
 
-void ACapstone_CortezCharacter::IncrementalShrink()
+/*void ACapstone_CortezCharacter::IncrementalShrink()
 {
 	bPressedShrink = true;
 	ShrinkKeyHoldTime = 0.0f;
 	DoShrink();
-}
+}*/
 
 void ACapstone_CortezCharacter::StopIncrementalShrinking()
 {
@@ -660,6 +661,15 @@ void ACapstone_CortezCharacter::IncrementalGrow()
 	SetCharacterScaleMode((CharacterScaleMode::Type) newCharacterScaleMode);
 }
 
+// Cycle Shrink States
+void ACapstone_CortezCharacter::IncrementalShrink()
+{
+	int newCharacterScaleMode = (int)CharacterScaleModeEnum - 1;
+
+	if (newCharacterScaleMode == -1) newCharacterScaleMode = CharacterScaleMode::MinScale;
+	SetCharacterScaleMode((CharacterScaleMode::Type) newCharacterScaleMode);
+}
+
 // Set the scale mode
 void ACapstone_CortezCharacter::SetCharacterScaleMode(CharacterScaleMode::Type newScaleMode)
 {
@@ -673,22 +683,19 @@ void ACapstone_CortezCharacter::UpdateForCharacterScaleMode()
 {
 	FVector NormalScale = FVector(1.0f, 1.0f, 1.0f);
 	FVector MaxScale = FVector(6.0f, 6.0f, 6.0f);
-	FVector MinScale = FVector(0.25f, 0.25f, 0.25f);
+	FVector MinScale = FVector(0.144338f, 0.144338f, 0.144338f);
 	// Changes visibility of first and third person meshes
 	switch (CharacterScaleModeEnum)
 	{
 	case CharacterScaleMode::MinScale:
 		SetActorScale3D(MinScale);
-		GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = 600.0f;
-		GetCharacterMovement()->UCharacterMovementComponent::Mass = 1.0f;
-		GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = 500.0f;
-		GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = 0.5f;
-		GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = 45.0f;
-		GetCharacterMovement()->UCharacterMovementComponent::GravityScale = 1.0f;
-		break;
+		CurrentBoomLength3P = 130.0f;			//Needed to adjust 3rd person camera boom
+		CameraBoom->TargetArmLength = CurrentBoomLength3P;
 		break;
 	case CharacterScaleMode::NormalScale:
 		SetActorScale3D(NormalScale);
+		CurrentBoomLength3P = 300.0f;			//Needed to adjust 3rd person camera boom
+		CameraBoom->TargetArmLength = CurrentBoomLength3P;
 		GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = 600.0f;
 		GetCharacterMovement()->UCharacterMovementComponent::Mass = 1.0f;
 		GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = 500.0f;
@@ -698,14 +705,14 @@ void ACapstone_CortezCharacter::UpdateForCharacterScaleMode()
 		break;
 	case CharacterScaleMode::MaxScale:
 		SetActorScale3D(MaxScale);
-		CurrentBoomLength3P = CurrentBoomLength3P *6.0f;			//Needed to adjust 3rd person camera boom
+		CurrentBoomLength3P = 1256.0f;			//Needed to adjust 3rd person camera boom
 		CameraBoom->TargetArmLength = CurrentBoomLength3P;
-		GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = 600.0f * 6.0f;
-		GetCharacterMovement()->UCharacterMovementComponent::Mass = 1.0f *6.0f;
-		GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = 500.0f *6.0f;
-		GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = 0.5f * 6.0f;
-		GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = 45.0f *6.0f;
-		GetCharacterMovement()->UCharacterMovementComponent::GravityScale = 1.0f *6.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = 1800.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::Mass = 6.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = 3000.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = 3.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = 270.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::GravityScale = 6.0f;
 		break;
 
 	default:
