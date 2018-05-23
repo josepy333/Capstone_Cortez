@@ -23,6 +23,7 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
+	SetCharacterScaleMode((CharacterScaleMode::Type) 1);
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
@@ -78,7 +79,6 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 void ACapstone_CortezCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 // Called every frame
@@ -229,6 +229,11 @@ void ACapstone_CortezCharacter::SetupPlayerInputComponent(class UInputComponent*
 	PlayerInputComponent->BindAction("Grow", IE_Released, this, &ACapstone_CortezCharacter::StopGrowing);
 	PlayerInputComponent->BindAction("Shrink", IE_Pressed, this, &ACapstone_CortezCharacter::Shrink);
 	PlayerInputComponent->BindAction("Shrink", IE_Released, this, &ACapstone_CortezCharacter::StopShrinking);
+	PlayerInputComponent->BindAction("IncrementalGrow", IE_Pressed, this, &ACapstone_CortezCharacter::IncrementalGrow);
+	PlayerInputComponent->BindAction("IncrementalGrow", IE_Released, this, &ACapstone_CortezCharacter::StopIncrementalGrowing);
+	PlayerInputComponent->BindAction("IncrementalShrink", IE_Pressed, this, &ACapstone_CortezCharacter::IncrementalShrink);
+	PlayerInputComponent->BindAction("IncrementalShrink", IE_Released, this, &ACapstone_CortezCharacter::StopIncrementalShrinking);
+
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ACapstone_CortezCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ACapstone_CortezCharacter::MoveRight);
@@ -245,17 +250,8 @@ void ACapstone_CortezCharacter::SetupPlayerInputComponent(class UInputComponent*
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &ACapstone_CortezCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &ACapstone_CortezCharacter::TouchStopped);
 
-	// VR headset functionality
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ACapstone_CortezCharacter::OnResetVR);
-
 	// Camera inputs
 	PlayerInputComponent->BindAction("ToggleCameraMode", IE_Pressed, this, &ACapstone_CortezCharacter::CycleCamera);
-}
-
-
-void ACapstone_CortezCharacter::OnResetVR()
-{
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
 }
 
 void ACapstone_CortezCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
@@ -380,6 +376,22 @@ void ACapstone_CortezCharacter::StopGrowing()
 	ResetGrowState();
 }
 
+/*void ACapstone_CortezCharacter::IncrementalGrow()
+{
+	bPressedGrow = true;
+	GrowKeyHoldTime = 0.0f;
+	DoGrow();
+	//CheckGrowInput(GrowKeyHoldTime);
+}*/
+
+void ACapstone_CortezCharacter::StopIncrementalGrowing()
+{
+	bPressedGrow = false;
+	GrowthFactor = 0.5f;
+	ResetGrowState();
+}
+
+
 bool ACapstone_CortezCharacter::DoGrow()
 {
 	if (bPressedGrow && CanGrow())
@@ -388,6 +400,8 @@ bool ACapstone_CortezCharacter::DoGrow()
 		if ((int)GrowKeyHoldTime % 2 == 0)
 		{
 			SetActorScale3D(currentScale * 2);
+			CurrentBoomLength3P = CurrentBoomLength3P * 2.0f;			//Needed to adjust 3rd person camera boom
+			CameraBoom->TargetArmLength = CurrentBoomLength3P;
 		}
 			
 		return true;
@@ -497,6 +511,20 @@ void ACapstone_CortezCharacter::StopShrinking()
 	ResetShrinkState();
 }
 
+void ACapstone_CortezCharacter::IncrementalShrink()
+{
+	bPressedShrink = true;
+	ShrinkKeyHoldTime = 0.0f;
+	DoShrink();
+}
+
+void ACapstone_CortezCharacter::StopIncrementalShrinking()
+{
+	bPressedShrink = false;
+	ShrinkFactor = 0.5f;
+	ResetShrinkState();
+}
+
 bool ACapstone_CortezCharacter::DoShrink()
 {
 	if (bPressedShrink && CanShrink())
@@ -555,6 +583,8 @@ float ACapstone_CortezCharacter::GetShrinkMaxHoldTime() const
 {
 	return ShrinkMaxHoldTime;
 }
+
+
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -617,3 +647,84 @@ bool ACapstone_CortezCharacter::IsThirdPersonMode()
 {
 	return IsThirdPerson(CameraModeEnum);
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Character Scale Mode
+
+// Cycle Grow States
+void ACapstone_CortezCharacter::IncrementalGrow()
+{
+	int newCharacterScaleMode = (int)CharacterScaleModeEnum + 1;
+
+	if (newCharacterScaleMode == 3) newCharacterScaleMode = CharacterScaleMode::MaxScale;
+	SetCharacterScaleMode((CharacterScaleMode::Type) newCharacterScaleMode);
+}
+
+// Set the scale mode
+void ACapstone_CortezCharacter::SetCharacterScaleMode(CharacterScaleMode::Type newScaleMode)
+{
+	CharacterScaleModeEnum = newScaleMode;
+	UpdateForCharacterScaleMode();
+
+}
+
+// Determines character scale values
+void ACapstone_CortezCharacter::UpdateForCharacterScaleMode()
+{
+	FVector NormalScale = FVector(1.0f, 1.0f, 1.0f);
+	FVector MaxScale = FVector(6.0f, 6.0f, 6.0f);
+	FVector MinScale = FVector(0.25f, 0.25f, 0.25f);
+	// Changes visibility of first and third person meshes
+	switch (CharacterScaleModeEnum)
+	{
+	case CharacterScaleMode::MinScale:
+		SetActorScale3D(MinScale);
+		GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = 600.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::Mass = 1.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = 500.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = 0.5f;
+		GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = 45.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::GravityScale = 1.0f;
+		break;
+		break;
+	case CharacterScaleMode::NormalScale:
+		SetActorScale3D(NormalScale);
+		GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = 600.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::Mass = 1.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = 500.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = 0.5f;
+		GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = 45.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::GravityScale = 1.0f;
+		break;
+	case CharacterScaleMode::MaxScale:
+		SetActorScale3D(MaxScale);
+		CurrentBoomLength3P = CurrentBoomLength3P *6.0f;			//Needed to adjust 3rd person camera boom
+		CameraBoom->TargetArmLength = CurrentBoomLength3P;
+		GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = 600.0f * 6.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::Mass = 1.0f *6.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = 500.0f *6.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = 0.5f * 6.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = 45.0f *6.0f;
+		GetCharacterMovement()->UCharacterMovementComponent::GravityScale = 1.0f *6.0f;
+		break;
+
+	default:
+		break;
+	}
+}
+
+bool ACapstone_CortezCharacter::IsNormalScaleMode()
+{
+	return IsNormalScale(CharacterScaleModeEnum);
+}
+
+bool ACapstone_CortezCharacter::IsMinScaleMode()
+{
+	return IsMinScale(CharacterScaleModeEnum);
+}
+
+bool ACapstone_CortezCharacter::IsMaxScaleMode()
+{
+	return IsMaxScale(CharacterScaleModeEnum);
+}
+

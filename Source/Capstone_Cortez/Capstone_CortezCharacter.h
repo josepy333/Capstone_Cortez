@@ -21,6 +21,17 @@ namespace CharacterCameraMode
 	};
 }
 
+UENUM(BlueprintType)
+namespace CharacterScaleMode
+{
+	enum Type
+	{
+		MinScale				UMETA(DisplayName="Min Scale"),
+		NormalScale				UMETA(DisplayName = "Normal Scale"),
+		MaxScale				UMETA(DisplayName="Max Scale"),
+	};
+}
+
 static inline bool IsFirstPerson(const CharacterCameraMode::Type CameraMode)
 {
 	return (CameraMode == CharacterCameraMode::FirstPerson);
@@ -43,6 +54,39 @@ static inline FString GetNameForCameraMode(const CharacterCameraMode::Type Camer
 		break;
 	default:
 		return TEXT("Unknown Camera Mode");
+	}
+}
+
+static inline bool IsNormalScale(const CharacterScaleMode::Type ScaleMode)
+{
+	return (ScaleMode == CharacterScaleMode::NormalScale);
+}
+
+static inline bool IsMaxScale(const CharacterScaleMode::Type ScaleMode)
+{
+	return (ScaleMode == CharacterScaleMode::MaxScale);
+}
+
+static inline bool IsMinScale(const CharacterScaleMode::Type ScaleMode)
+{
+	return (ScaleMode == CharacterScaleMode::MinScale);
+}
+
+static inline FString GetNameForScaleMode(const CharacterScaleMode::Type ScaleMode)
+{
+	switch (ScaleMode)
+	{
+	case CharacterScaleMode::MinScale:
+		return TEXT("Min Scale");
+		break;
+	case CharacterScaleMode::NormalScale:
+		return TEXT("Normal Scale");
+		break;
+	case CharacterScaleMode::MaxScale:
+		return TEXT("Max Scale");
+		break;
+	default:
+		return TEXT("Unknown Scale Mode");
 	}
 }
 
@@ -87,6 +131,10 @@ public:
 	/** Current camera mode */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	TEnumAsByte<CharacterCameraMode::Type> CameraModeEnum;
+
+	/** Current scale mode */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
+		TEnumAsByte<CharacterScaleMode::Type> CharacterScaleModeEnum;
 
 	/** Controls the follow camera turn angle.Only affects Third Person Follow mode. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SmoothFollowCamera)
@@ -193,6 +241,21 @@ public:
 		virtual void StopGrowing();
 
 	/**
+	* Make the character grow on the next update.
+	*
+	UFUNCTION(BlueprintCallable, Category = Character)
+		virtual void IncrementalGrow();/
+
+	/**
+	* Stop the character from growing on the next update.
+	* Call this from an input event (such as a button 'up' event) to cease applying
+	* grow. If this is not called, then grow will be applied
+	* until GrowMaxSize is reached.
+	*/
+	UFUNCTION(BlueprintCallable, Category = Character)
+		virtual void StopIncrementalGrowing();
+
+	/**
 	* Make the character shrink on the next update.
 	*/
 	UFUNCTION(BlueprintCallable, Category = Character)
@@ -220,6 +283,21 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, Category = Character)
 		virtual void StopShrinking();
+
+	/**
+	* Make the character shrink on the next update.
+	*
+	UFUNCTION(BlueprintCallable, Category = Character)
+		virtual void IncrementalShrink();/
+
+	/**
+	* Stop the character from shrinking on the next update.
+	* Call this from an input event (such as a button 'up' event) to cease applying
+	* shrink. If this is not called, then shrink will be applied
+	* until ShrinkMaxSize is reached.
+	*/
+	UFUNCTION(BlueprintCallable, Category = Character)
+		virtual void StopIncrementalShrinking();
 
 	/**
 	* Check if the character can grow in the current state.
@@ -342,8 +420,6 @@ protected:
 	bool IsAutoReset;
 
 protected:
-	/** Resets HMD orientation in VR. */
-	void OnResetVR();
 
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
@@ -394,6 +470,32 @@ protected:
 
 	/** Is Camera in third person mode */
 	bool IsThirdPersonMode();
+
+protected:
+	// Character Scale Mode
+
+	/** Cyle to next Grow mode */
+	void IncrementalGrow();
+
+	/** Cycle to next Shrink mode */
+	void IncrementalShrink();
+
+	/** Sets the character scale mode to the specified value */
+	void SetCharacterScaleMode(CharacterScaleMode::Type newCharacterScaleMode);
+
+	/** Sets properties based on scale mode value */
+	void UpdateForCharacterScaleMode();
+
+	/**Is Character Scale in normal mode */
+	bool IsNormalScaleMode();
+
+	/**Is Character Scale in min mode */
+	bool IsMinScaleMode();
+
+	/**Is Character Scale in max mode */
+	bool IsMaxScaleMode();
+
+
 
 public:
 	/** Returns CameraBoom subobject **/
