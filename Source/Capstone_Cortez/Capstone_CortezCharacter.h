@@ -116,6 +116,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 
+	// Minor Incremental value
+	float minorIncrement;
+
+	// Major Incremental value
+	float majorIncrement;
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -124,9 +130,21 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
-	/** Base Actor Scale */
+	/** Base Actor Size */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
 	float NormalSize;
+
+	/** Normal Actor Scale */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
+	FVector NormalScale;
+
+	/** Max Actor Scale */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
+	FVector MaxScale;
+
+	/** Min Actor Scale */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
+	FVector MinScale;
 
 	/** Current camera mode */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
