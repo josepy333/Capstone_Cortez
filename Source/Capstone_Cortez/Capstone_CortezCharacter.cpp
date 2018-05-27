@@ -294,6 +294,9 @@ void ACapstone_CortezCharacter::SetupPlayerInputComponent(class UInputComponent*
 
 	// Camera inputs
 	PlayerInputComponent->BindAction("ToggleCameraMode", IE_Pressed, this, &ACapstone_CortezCharacter::CycleCamera);
+
+	// Movement inputs
+	PlayerInputComponent->BindAction("ToggleMovementMode", IE_Pressed, this, &ACapstone_CortezCharacter::CycleMovement);
 }
 
 void ACapstone_CortezCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
@@ -808,3 +811,50 @@ bool ACapstone_CortezCharacter::IsMaxScaleMode()
 	return IsMaxScale(CharacterScaleModeEnum);
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Movement Mode
+
+// Cycles the character's movement mode
+void ACapstone_CortezCharacter::CycleMovement()
+{
+
+	int newMovementMode = (int)MovementModeEnum + 1;
+
+	if (newMovementMode == 2) newMovementMode = CharacterMovementMode::WalkDefault;
+	SetMovementMode((CharacterMovementMode::Type) newMovementMode);
+}
+
+// Set Movement mode
+void ACapstone_CortezCharacter::SetMovementMode(CharacterMovementMode::Type newMovementMode)
+{
+	MovementModeEnum = newMovementMode;
+	UpdateForMovementMode();
+
+}
+
+// Determines character movement between flight and nonflight
+void ACapstone_CortezCharacter::UpdateForMovementMode()
+{
+
+	// Changes Movement mode
+	switch (MovementModeEnum)
+	{
+	case CharacterMovementMode::WalkDefault:
+		GetCharacterMovement()->UCharacterMovementComponent::SetMovementMode(MOVE_Walking);
+		break;
+	case CharacterMovementMode::Fly:
+		GetCharacterMovement()->UCharacterMovementComponent::SetMovementMode(MOVE_Flying);
+	default:
+		break;
+	}
+}
+
+bool ACapstone_CortezCharacter::IsWalkMode()
+{
+	return IsWalking(MovementModeEnum);
+}
+
+bool ACapstone_CortezCharacter::IsFlyMode()
+{
+	return IsFlying(MovementModeEnum);
+}

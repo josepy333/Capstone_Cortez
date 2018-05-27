@@ -32,6 +32,16 @@ namespace CharacterScaleMode
 	};
 }
 
+UENUM(BlueprintType)
+namespace CharacterMovementMode
+{
+	enum Type
+	{
+		WalkDefault				UMETA(DisplayName="Walk"),
+		Fly						UMETA(DisplayName="Fly"),
+	};
+}
+
 static inline bool IsFirstPerson(const CharacterCameraMode::Type CameraMode)
 {
 	return (CameraMode == CharacterCameraMode::FirstPerson);
@@ -87,6 +97,31 @@ static inline FString GetNameForScaleMode(const CharacterScaleMode::Type ScaleMo
 		break;
 	default:
 		return TEXT("Unknown Scale Mode");
+	}
+}
+
+static inline bool IsWalking(const CharacterMovementMode::Type MovementMode)
+{
+	return (MovementMode == CharacterMovementMode::WalkDefault);
+}
+
+static inline bool IsFlying(const CharacterMovementMode::Type MovementMode)
+{
+	return !IsWalking(MovementMode);
+}
+
+static inline FString GetNameForMovementMode(const CharacterMovementMode::Type MovementMode)
+{
+	switch (MovementMode)
+	{
+	case CharacterMovementMode::WalkDefault:
+		return TEXT("Walk");
+		break;
+	case CharacterMovementMode::Fly:
+		return TEXT("Fly");
+		break;
+	default:
+		return TEXT("Unknown Movement Mode");
 	}
 }
 
@@ -152,7 +187,11 @@ public:
 
 	/** Current scale mode */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
-		TEnumAsByte<CharacterScaleMode::Type> CharacterScaleModeEnum;
+	TEnumAsByte<CharacterScaleMode::Type> CharacterScaleModeEnum;
+
+	/** Current movment mode */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
+	TEnumAsByte<CharacterMovementMode::Type> MovementModeEnum;
 
 	/** Controls the follow camera turn angle.Only affects Third Person Follow mode. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SmoothFollowCamera)
@@ -518,7 +557,23 @@ protected:
 	/**Is Character Scale in max mode */
 	bool IsMaxScaleMode();
 
+protected:
+	// Movement Mode
 
+	/** Cycle to the next Movement mode */
+	void CycleMovement();
+
+	/** Sets the Movement mode to the specified value */
+	void SetMovementMode(CharacterMovementMode::Type newMovementMode);
+
+	/** Sets properties based on Movement mode value */
+	void UpdateForMovementMode();
+
+	/** Is Movement walking */ 
+	bool IsWalkMode();
+
+	/** Is Movement flying */
+	bool IsFlyMode();
 
 public:
 	/** Returns CameraBoom subobject **/
