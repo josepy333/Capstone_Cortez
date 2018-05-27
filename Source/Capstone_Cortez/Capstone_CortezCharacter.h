@@ -471,6 +471,11 @@ protected:
 	/** Is Camera in third person mode */
 	bool IsThirdPersonMode();
 
+public:
+	bool IsAlreadyMinScaleMode = false;
+	bool IsAlreadyMaxScaleMode = false;
+	bool IsAlreadyNormalScaleMode = true;
+
 protected:
 	// Character Scale Mode
 

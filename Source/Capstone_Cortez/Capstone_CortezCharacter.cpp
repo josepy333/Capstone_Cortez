@@ -684,6 +684,13 @@ void ACapstone_CortezCharacter::UpdateForCharacterScaleMode()
 	FVector NormalScale = FVector(1.0f, 1.0f, 1.0f);
 	FVector MaxScale = FVector(6.0f, 6.0f, 6.0f);
 	FVector MinScale = FVector(0.144338f, 0.144338f, 0.144338f);
+
+	// Offset Z location so character won't go through floor when growing
+	FVector GrowLocationOffset = FVector(0.0f, 0.0f, 200.0f);
+
+	// Offset Z locaton so character won't fall when shrinking
+	FVector ShrinkLocationOffset = FVector(0.0f, 0.0f, 50.0f);
+
 	// Changes visibility of first and third person meshes
 	switch (CharacterScaleModeEnum)
 	{
@@ -691,6 +698,12 @@ void ACapstone_CortezCharacter::UpdateForCharacterScaleMode()
 		SetActorScale3D(MinScale);
 		CurrentBoomLength3P = 130.0f;			//Needed to adjust 3rd person camera boom
 		CameraBoom->TargetArmLength = CurrentBoomLength3P;
+		// Make sure we don't readjust Z location if already min size
+		if (!IsAlreadyMinScaleMode)
+			SetActorRelativeLocation(GetActorLocation() - ShrinkLocationOffset);
+		IsAlreadyMinScaleMode = true;
+		IsAlreadyMaxScaleMode = false;
+		IsAlreadyNormalScaleMode = false;
 		break;
 	case CharacterScaleMode::NormalScale:
 		SetActorScale3D(NormalScale);
@@ -702,6 +715,9 @@ void ACapstone_CortezCharacter::UpdateForCharacterScaleMode()
 		GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = 0.5f;
 		GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = 45.0f;
 		GetCharacterMovement()->UCharacterMovementComponent::GravityScale = 1.0f;
+		IsAlreadyNormalScaleMode = true;
+		IsAlreadyMinScaleMode = false;
+		IsAlreadyMaxScaleMode = false;
 		break;
 	case CharacterScaleMode::MaxScale:
 		SetActorScale3D(MaxScale);
@@ -713,6 +729,10 @@ void ACapstone_CortezCharacter::UpdateForCharacterScaleMode()
 		GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = 3.0f;
 		GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = 270.0f;
 		GetCharacterMovement()->UCharacterMovementComponent::GravityScale = 6.0f;
+		// Make sure we don't readjust Z location if already max size
+		if (!IsAlreadyMaxScaleMode)
+			SetActorRelativeLocation(GetActorLocation() + GrowLocationOffset);
+		IsAlreadyMaxScaleMode = true;
 		break;
 
 	default:
