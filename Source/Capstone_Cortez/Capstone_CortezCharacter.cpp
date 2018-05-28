@@ -77,6 +77,8 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	MaxScale = FVector(5.773502f, 5.773502f, 5.773502f);
 	MinScale = FVector(0.144338f, 0.144338f, 0.144338f);
 
+	GetCharacterMovement()->UCharacterMovementComponent::NavAgentProps.bCanFly = true;
+
 	SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
