@@ -36,12 +36,19 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	CurrentBoomLength3P = 300.0f;
 
 	FName headSocket = "headSocket";
+
+	// Incremental values
 	minorIncrement = 0.01f;
-	majorIncrement = 0.001f;
+	superMinorIncrement = 0.001f;
+	doubleIncrement = 2.0f;
+	tripleIncrement = 3.0f;
+	quadIncrement = 4.0f;
+
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 500.0f;
+	
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -80,6 +87,7 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	GetCharacterMovement()->UCharacterMovementComponent::NavAgentProps.bCanFly = true;
 
 	SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
+	SetMovementMode((CharacterMovementMode::Type) CharacterMovementMode::WalkDefault);
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -98,19 +106,13 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 	FVector currentScale = GetActorScale3D();						// Get the current scale of the character
 	currentScale = currentScale.GetClampedToSize(ShrinkMinSize, GrowMaxSize);		// Add constraints to scale
 	
-	/*******************         VARIABLE TRACKER FOR ACTOR SIZE ****************************************************************/
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Current Scale %f Current Boom Length %f"), currentScale.GetMax(), CurrentBoomLength3P));
-
-	/*******************************************************************************************************************************/
-	
 	// Ability to have seamless growth
-	if (bPressedGrow && IsThirdPersonMode() && currentScale.Size() < GrowMaxSize -.001)
+	if (bPressedGrow && IsThirdPersonMode() && currentScale.Size() < GrowMaxSize -superMinorIncrement && IsWalkMode())
 	{
 		GrowthFactor = 1.0f;
 
 		SetActorScale3D(currentScale + (GrowthFactor*minorIncrement));
-		CurrentBoomLength3P = CurrentBoomLength3P + (GrowthFactor*2.0f);			//Needed to adjust 3rd person camera boom
+		CurrentBoomLength3P = CurrentBoomLength3P + (GrowthFactor*doubleIncrement);			//Needed to adjust 3rd person camera boom
 		CameraBoom->TargetArmLength = CurrentBoomLength3P;
 
 		if (currentScale.GetMax() > MaxScale.GetMax() - minorIncrement)
@@ -121,11 +123,11 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 		// Increase movement speed when larger than normal
 		if (currentScale.GetMax() > NormalSize + minorIncrement)
 		{
-			GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed + (GrowthFactor*4.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::Mass = GetCharacterMovement()->UCharacterMovementComponent::Mass + (GrowthFactor*2.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity + (GrowthFactor*4.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor + (GrowthFactor*4.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight + (GrowthFactor*2.0f);
+			GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed + (GrowthFactor*quadIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::Mass = GetCharacterMovement()->UCharacterMovementComponent::Mass + (GrowthFactor*doubleIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity + (GrowthFactor*quadIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor + (GrowthFactor*quadIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight + (GrowthFactor*doubleIncrement);
 			GetCharacterMovement()->UCharacterMovementComponent::GravityScale = GetCharacterMovement()->UCharacterMovementComponent::GravityScale + (GrowthFactor*minorIncrement);
 
 		}
@@ -141,12 +143,16 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 
 			SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
 		}
+
+		// Makes it possible for character to initiate jetpack when half size
+		else if (currentScale.GetMax() > (NormalSize / doubleIncrement))
+			SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
 	}
-	else if(bPressedGrow && IsFirstPersonMode() && currentScale.Size() < GrowMaxSize -minorIncrement)
+	else if(bPressedGrow && IsFirstPersonMode() && currentScale.Size() < GrowMaxSize -minorIncrement && IsWalkMode())
 	{
 		GrowthFactor = 1.0f;
 		SetActorScale3D(currentScale + (GrowthFactor*minorIncrement));
-		CurrentBoomLength3P = CurrentBoomLength3P + (GrowthFactor*2.0f);			//Needed to adjust 3rd person camera boom
+		CurrentBoomLength3P = CurrentBoomLength3P + (GrowthFactor*doubleIncrement);			//Needed to adjust 3rd person camera boom
 
 		if (currentScale.GetMax() > MaxScale.GetMax() - minorIncrement)
 		{
@@ -156,11 +162,11 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 		// Increase movement speed when larger than normal
 		if (currentScale.GetMax() > NormalSize + minorIncrement)
 		{
-			GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed + (GrowthFactor*4.0f);
+			GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed + (GrowthFactor*quadIncrement);
 			GetCharacterMovement()->UCharacterMovementComponent::Mass = GetCharacterMovement()->UCharacterMovementComponent::Mass + (GrowthFactor *minorIncrement);
-			GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity + (GrowthFactor*4.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor + (GrowthFactor*4.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight + (GrowthFactor*2.0f);
+			GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity + (GrowthFactor*quadIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor + (GrowthFactor*quadIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight + (GrowthFactor*doubleIncrement);
 			GetCharacterMovement()->UCharacterMovementComponent::GravityScale = GetCharacterMovement()->UCharacterMovementComponent::GravityScale + (GrowthFactor*minorIncrement);
 		}
 		// Reset Movement Stats when within normal size range
@@ -174,6 +180,10 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 			GetCharacterMovement()->UCharacterMovementComponent::GravityScale = 1.0f;
 			SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
 		}
+
+		// Makes it possible for character to initiate jetpack when half size
+		else if (currentScale.GetMax() > (NormalSize / doubleIncrement))
+			SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
 	}
 
 	// Ability to have seamless shrink
@@ -181,7 +191,7 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 	{
 		ShrinkFactor = 1.0f;
 		SetActorScale3D(currentScale - (ShrinkFactor*minorIncrement));
-		CurrentBoomLength3P = CurrentBoomLength3P - (ShrinkFactor*2.0f);			//Needed to adjust 3rd person camera boom
+		CurrentBoomLength3P = CurrentBoomLength3P - (ShrinkFactor*doubleIncrement);			//Needed to adjust 3rd person camera boom
 		CameraBoom->TargetArmLength = CurrentBoomLength3P;
 
 		if (currentScale.GetMax() < MinScale.GetMax() + minorIncrement)
@@ -192,13 +202,13 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 		// Decrease movement speed when larger than normal
 		if (currentScale.GetMax() > NormalSize +minorIncrement)
 		{
-			GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed - (GrowthFactor*4.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::Mass = GetCharacterMovement()->UCharacterMovementComponent::Mass - (GrowthFactor*2.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity - (GrowthFactor*4.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor - (GrowthFactor*4.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight - (GrowthFactor*2.0f);
+			GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed - (GrowthFactor*quadIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::Mass = GetCharacterMovement()->UCharacterMovementComponent::Mass - (GrowthFactor*doubleIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity - (GrowthFactor*quadIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor - (GrowthFactor*quadIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight - (GrowthFactor*doubleIncrement);
 			GetCharacterMovement()->UCharacterMovementComponent::GravityScale = GetCharacterMovement()->UCharacterMovementComponent::GravityScale - (GrowthFactor*minorIncrement);
-			if (currentScale.GetMax() < MaxScale.GetMax() - 2.0f)
+			if (currentScale.GetMax() < MaxScale.GetMax() - doubleIncrement)
 			{
 				SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
 			}
@@ -214,12 +224,15 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 			GetCharacterMovement()->UCharacterMovementComponent::GravityScale = 1.0f;
 			SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
 		}
+		// Makes it possible for character to initiate jetpack when half size
+		else if (currentScale.GetMax() < (NormalSize / doubleIncrement))
+			SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::MinScale);
 	}
 	else if (bPressedShrink && IsFirstPersonMode() && currentScale.Size() >= ShrinkMinSize)
 	{
 		ShrinkFactor = 1.0f;
 		SetActorScale3D(currentScale - (ShrinkFactor*minorIncrement));
-		CurrentBoomLength3P = CurrentBoomLength3P - (ShrinkFactor*2.0f);			//Needed to adjust 3rd person camera boom
+		CurrentBoomLength3P = CurrentBoomLength3P - (ShrinkFactor*doubleIncrement);			//Needed to adjust 3rd person camera boom
 
 		if (currentScale.GetMax() < MinScale.GetMax() + minorIncrement)
 		{
@@ -229,14 +242,14 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 		// Decrease movement speed when larger than normal
 		if (currentScale.GetMax() > NormalSize +minorIncrement)
 		{
-			GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed - (GrowthFactor*4.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::Mass = GetCharacterMovement()->UCharacterMovementComponent::Mass - (GrowthFactor*2.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity - (GrowthFactor*4.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor - (GrowthFactor*4.0f);
-			GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight - (GrowthFactor*2.0f);
+			GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed = GetCharacterMovement()->UCharacterMovementComponent::MaxWalkSpeed - (GrowthFactor*quadIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::Mass = GetCharacterMovement()->UCharacterMovementComponent::Mass - (GrowthFactor*doubleIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity = GetCharacterMovement()->UCharacterMovementComponent::JumpZVelocity - (GrowthFactor*quadIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor = GetCharacterMovement()->UCharacterMovementComponent::JumpOffJumpZFactor - (GrowthFactor*quadIncrement);
+			GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight = GetCharacterMovement()->UCharacterMovementComponent::MaxStepHeight - (GrowthFactor*doubleIncrement);
 			GetCharacterMovement()->UCharacterMovementComponent::GravityScale = GetCharacterMovement()->UCharacterMovementComponent::GravityScale - (GrowthFactor*minorIncrement);
 
-			if (currentScale.GetMax() < MaxScale.GetMax() - 2.0f)
+			if (currentScale.GetMax() < MaxScale.GetMax() - doubleIncrement)
 			{
 				SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
 			}
@@ -253,6 +266,9 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 			GetCharacterMovement()->UCharacterMovementComponent::GravityScale = 1.0f;
 			SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
 		}
+		// Makes it possible for character to initiate jetpack when half size
+		else if (currentScale.GetMax() < (NormalSize / doubleIncrement))
+			SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::MinScale);
 	}
 
 	
@@ -281,6 +297,7 @@ void ACapstone_CortezCharacter::SetupPlayerInputComponent(class UInputComponent*
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ACapstone_CortezCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ACapstone_CortezCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("JetPackBoost", this, &ACapstone_CortezCharacter::JetPack);
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -367,6 +384,26 @@ void ACapstone_CortezCharacter::MoveRight(float Value)
 	}
 }
 
+void ACapstone_CortezCharacter::JetPack(float Value)
+{
+	if (Value == 0.f) return;
+
+	if ((Controller != NULL) && (IsThirdPersonMode()))
+	{
+		// find out which way is up
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get up vector
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Z);
+		AddMovementInput(Direction, Value);
+	}
+	else
+	{
+		AddMovementInput(GetActorUpVector(), Value);
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Grow Functions
 
@@ -447,7 +484,7 @@ bool ACapstone_CortezCharacter::DoGrow()
 		if ((int)GrowKeyHoldTime % 2 == 0)
 		{
 			SetActorScale3D(currentScale * 2);
-			CurrentBoomLength3P = CurrentBoomLength3P * 2.0f;			//Needed to adjust 3rd person camera boom
+			CurrentBoomLength3P = CurrentBoomLength3P * doubleIncrement;			//Needed to adjust 3rd person camera boom
 			CameraBoom->TargetArmLength = CurrentBoomLength3P;
 		}
 			
@@ -673,7 +710,7 @@ void ACapstone_CortezCharacter::UpdateForCameraMode()
 		break;
 	case CharacterCameraMode::FirstPerson:
 		CameraBoom->AttachTo(GetMesh(), "headSocket");
-		CameraBoom->TargetArmLength = 0.f;
+		CameraBoom->TargetArmLength = 0.0f;
 		IsResetting = false;
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationYaw = true;
@@ -701,19 +738,27 @@ bool ACapstone_CortezCharacter::IsThirdPersonMode()
 // Cycle Grow States
 void ACapstone_CortezCharacter::IncrementalGrow()
 {
-	int newCharacterScaleMode = (int)CharacterScaleModeEnum + 1;
+	if (IsWalkMode())
+	{
+		int newCharacterScaleMode = (int)CharacterScaleModeEnum + 1;
 
-	if (newCharacterScaleMode == 3) newCharacterScaleMode = CharacterScaleMode::MaxScale;
-	SetCharacterScaleMode((CharacterScaleMode::Type) newCharacterScaleMode);
+		if (newCharacterScaleMode == 3) newCharacterScaleMode = CharacterScaleMode::MaxScale;
+		SetCharacterScaleMode((CharacterScaleMode::Type) newCharacterScaleMode);
+	}
+	
 }
 
 // Cycle Shrink States
 void ACapstone_CortezCharacter::IncrementalShrink()
 {
-	int newCharacterScaleMode = (int)CharacterScaleModeEnum - 1;
+	if (IsWalkMode())
+	{
+		int newCharacterScaleMode = (int)CharacterScaleModeEnum - 1;
 
-	if (newCharacterScaleMode == -1) newCharacterScaleMode = CharacterScaleMode::MinScale;
-	SetCharacterScaleMode((CharacterScaleMode::Type) newCharacterScaleMode);
+		if (newCharacterScaleMode == -1) newCharacterScaleMode = CharacterScaleMode::MinScale;
+		SetCharacterScaleMode((CharacterScaleMode::Type) newCharacterScaleMode);
+	}
+	
 }
 
 // Set the scale mode
@@ -819,11 +864,14 @@ bool ACapstone_CortezCharacter::IsMaxScaleMode()
 // Cycles the character's movement mode
 void ACapstone_CortezCharacter::CycleMovement()
 {
+	if (IsAlreadyMinScaleMode)
+	{
+		int newMovementMode = (int)MovementModeEnum + 1;
 
-	int newMovementMode = (int)MovementModeEnum + 1;
-
-	if (newMovementMode == 2) newMovementMode = CharacterMovementMode::WalkDefault;
-	SetMovementMode((CharacterMovementMode::Type) newMovementMode);
+		if (newMovementMode == 2) newMovementMode = CharacterMovementMode::WalkDefault;
+		SetMovementMode((CharacterMovementMode::Type) newMovementMode);
+	}
+	
 }
 
 // Set Movement mode
@@ -837,7 +885,7 @@ void ACapstone_CortezCharacter::SetMovementMode(CharacterMovementMode::Type newM
 // Determines character movement between flight and nonflight
 void ACapstone_CortezCharacter::UpdateForMovementMode()
 {
-
+	FVector currentScale = GetActorScale3D();						// Get the current scale of the character
 	// Changes Movement mode
 	switch (MovementModeEnum)
 	{
@@ -845,7 +893,8 @@ void ACapstone_CortezCharacter::UpdateForMovementMode()
 		GetCharacterMovement()->UCharacterMovementComponent::SetMovementMode(MOVE_Walking);
 		break;
 	case CharacterMovementMode::Fly:
-		GetCharacterMovement()->UCharacterMovementComponent::SetMovementMode(MOVE_Flying);
+			GetCharacterMovement()->UCharacterMovementComponent::SetMovementMode(MOVE_Flying);
+			bUseControllerRotationYaw = true;
 	default:
 		break;
 	}

@@ -107,7 +107,7 @@ static inline bool IsWalking(const CharacterMovementMode::Type MovementMode)
 
 static inline bool IsFlying(const CharacterMovementMode::Type MovementMode)
 {
-	return !IsWalking(MovementMode);
+	return (MovementMode == CharacterMovementMode::Fly);
 }
 
 static inline FString GetNameForMovementMode(const CharacterMovementMode::Type MovementMode)
@@ -155,7 +155,16 @@ public:
 	float minorIncrement;
 
 	// Major Incremental value
-	float majorIncrement;
+	float superMinorIncrement;
+
+	// Double incremental value
+	float doubleIncrement;
+
+	// Triple incremental value
+	float tripleIncrement;
+
+	// Quadrupal Incremental value
+	float quadIncrement;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
@@ -484,6 +493,9 @@ protected:
 	/** Called for side to side input */
 	void MoveRight(float Value);
 
+	/** Called for up and down movement */
+	void JetPack(float Value);
+
 	/** 
 	 * Called via input to turn at a given rate. 
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
@@ -581,4 +593,8 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 };
+
+
+
+
 
