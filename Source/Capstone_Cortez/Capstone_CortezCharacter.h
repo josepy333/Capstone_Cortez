@@ -137,6 +137,11 @@ class ACapstone_CortezCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+	/** Player controller */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class APlayerController* PlayerController;
+
 	
 
 public:
@@ -375,6 +380,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Character)
 		bool CanGrow() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+		void TestCall();
+
 protected:
 	/**
 	* Customizable event to check if the character can grow in the current state.
@@ -578,14 +586,16 @@ protected:
 	/** Sets the Movement mode to the specified value */
 	void SetMovementMode(CharacterMovementMode::Type newMovementMode);
 
-	/** Sets properties based on Movement mode value */
-	void UpdateForMovementMode();
-
 	/** Is Movement walking */ 
 	bool IsWalkMode();
 
 	/** Is Movement flying */
 	bool IsFlyMode();
+
+public:
+	/** Sets properties based on Movement mode value */
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	void UpdateForMovementMode();
 
 public:
 	/** Returns CameraBoom subobject **/

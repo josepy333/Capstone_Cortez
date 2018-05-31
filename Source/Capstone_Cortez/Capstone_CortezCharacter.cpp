@@ -7,6 +7,7 @@
 #include "Kismet/HeadMountedDisplayFunctionLibrary.h"
 #include "Capstone_CortezCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "EngineGlobals.h"
 #include "Engine.h"
@@ -869,7 +870,9 @@ void ACapstone_CortezCharacter::CycleMovement()
 		int newMovementMode = (int)MovementModeEnum + 1;
 
 		if (newMovementMode == 2) newMovementMode = CharacterMovementMode::WalkDefault;
+		GetCharacterMovement()->StopMovementImmediately();								// Stops character movement when transitioning to flight
 		SetMovementMode((CharacterMovementMode::Type) newMovementMode);
+		Controller->SetIgnoreMoveInput(true);											// Doesn't let character move during animation
 	}
 	
 }
@@ -877,8 +880,17 @@ void ACapstone_CortezCharacter::CycleMovement()
 // Set Movement mode
 void ACapstone_CortezCharacter::SetMovementMode(CharacterMovementMode::Type newMovementMode)
 {
+	FLatentActionInfo LatentActionInfo;
+	LatentActionInfo.CallbackTarget = this;
+	LatentActionInfo.ExecutionFunction = "TestCall";
+	LatentActionInfo.UUID = 123;
+	LatentActionInfo.Linkage = 0;
 	MovementModeEnum = newMovementMode;
 	UpdateForMovementMode();
+	if (newMovementMode == 1)
+		UKismetSystemLibrary::Delay(this, 2, LatentActionInfo);			// Set delay for changing to flight mode
+	else
+		UKismetSystemLibrary::Delay(this, 1.5, LatentActionInfo);		// Set delay for changing to walking mode
 
 }
 
@@ -893,11 +905,12 @@ void ACapstone_CortezCharacter::UpdateForMovementMode()
 		GetCharacterMovement()->UCharacterMovementComponent::SetMovementMode(MOVE_Walking);
 		break;
 	case CharacterMovementMode::Fly:
-			GetCharacterMovement()->UCharacterMovementComponent::SetMovementMode(MOVE_Flying);
-			bUseControllerRotationYaw = true;
+		GetCharacterMovement()->UCharacterMovementComponent::SetMovementMode(MOVE_Flying);
+		bUseControllerRotationYaw = true;
+		break;
 	default:
 		break;
-	}
+	}	
 }
 
 bool ACapstone_CortezCharacter::IsWalkMode()
@@ -909,3 +922,11 @@ bool ACapstone_CortezCharacter::IsFlyMode()
 {
 	return IsFlying(MovementModeEnum);
 }
+
+void ACapstone_CortezCharacter::TestCall()
+{
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, INFINITE, FColor::Black, TEXT("AMyActor::TestCall"));
+	Controller->ResetIgnoreMoveInput();
+}
+
