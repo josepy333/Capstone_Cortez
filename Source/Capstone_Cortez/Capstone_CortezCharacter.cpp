@@ -736,7 +736,9 @@ void ACapstone_CortezCharacter::UpdateForMovementMode()
 	{
 	case CharacterMovementMode::WalkDefault:
 		GetCharacterMovement()->UCharacterMovementComponent::SetMovementMode(MOVE_Walking);
-		bUseControllerRotationYaw = false;
+		// Need to off Controller Rotation Yaw if in Third Person mode and leave on if in First Person Mode
+		if(IsThirdPersonMode())
+			bUseControllerRotationYaw = false;
 		break;
 	case CharacterMovementMode::Fly:
 		GetCharacterMovement()->UCharacterMovementComponent::SetMovementMode(MOVE_Flying);
