@@ -312,12 +312,6 @@ public:
 		virtual void StopGrowing();
 
 	/**
-	* Make the character grow on the next update.
-	*
-	UFUNCTION(BlueprintCallable, Category = Character)
-		virtual void IncrementalGrow();/
-
-	/**
 	* Stop the character from growing on the next update.
 	* Call this from an input event (such as a button 'up' event) to cease applying
 	* grow. If this is not called, then grow will be applied
@@ -356,12 +350,6 @@ public:
 		virtual void StopShrinking();
 
 	/**
-	* Make the character shrink on the next update.
-	*
-	UFUNCTION(BlueprintCallable, Category = Character)
-		virtual void IncrementalShrink();/
-
-	/**
 	* Stop the character from shrinking on the next update.
 	* Call this from an input event (such as a button 'up' event) to cease applying
 	* shrink. If this is not called, then shrink will be applied
@@ -392,8 +380,8 @@ protected:
 	* than zero and IsGrowing returns true.
 	*
 	*
-	* @Return Whether the character can grow in the current state.
-	*/
+	* @Return Whether the character can grow in the current state.*/
+	
 
 	UFUNCTION(BlueprintNativeEvent, Category = Character, meta = (DisplayName = "CanGrow"))
 		bool CanGrowInternal() const;
@@ -442,17 +430,6 @@ public:
 
 	/** Reset input state after having checked input. */
 	virtual void ClearShrinkInput();
-
-	/** Event fired when the character has just started growing */
-	UFUNCTION(BlueprintNativeEvent, Category = Character)
-	void OnGrow();
-	virtual void OnGrow_Implementation();
-
-	/**
-	* True if grow is actively providing a force, such as when the grow key is held and the time it has been held is less than GrowMaxHoldTime.
-	*/
-	UFUNCTION(BlueprintCallable, Category = Character)
-	virtual bool IsGrowProvidingForce() const;
 
 	/** Event fired when the character has just started shrinking */
 	UFUNCTION(BlueprintNativeEvent, Category = Character)

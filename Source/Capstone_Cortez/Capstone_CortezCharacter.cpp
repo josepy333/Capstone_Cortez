@@ -36,7 +36,7 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	// Default 3rd person boom length
 	CurrentBoomLength3P = 300.0f;
 
-	FName headSocket = "headSocket";
+	FName headSocket = "headSocket";				// Socket to attach camera boom to
 
 	// Incremental values
 	minorIncrement = 0.01f;
@@ -88,7 +88,6 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	GetCharacterMovement()->UCharacterMovementComponent::NavAgentProps.bCanFly = true;
 
 	SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
-	SetMovementMode((CharacterMovementMode::Type) CharacterMovementMode::WalkDefault);
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -385,6 +384,7 @@ void ACapstone_CortezCharacter::MoveRight(float Value)
 	}
 }
 
+/** Movement Function to allow for up and down movment of jetpack **/
 void ACapstone_CortezCharacter::JetPack(float Value)
 {
 	if (Value == 0.f) return;
@@ -437,21 +437,10 @@ bool ACapstone_CortezCharacter::CanGrowInternal_Implementation() const
 	return bCanGrow;
 }
 
-void ACapstone_CortezCharacter::OnGrow_Implementation()
-{
-}
-
-bool ACapstone_CortezCharacter::IsGrowProvidingForce() const
-{
-	return (bPressedGrow && GrowKeyHoldTime > 0.0f && GrowKeyHoldTime < GrowMaxHoldTime);
-}
-
 void ACapstone_CortezCharacter::Grow()
 {
 	bPressedGrow = true;
 	GrowKeyHoldTime = 0.0f;
-	//DoGrow();
-	//CheckGrowInput(GrowKeyHoldTime);
 }
 
 void ACapstone_CortezCharacter::StopGrowing()
@@ -460,14 +449,6 @@ void ACapstone_CortezCharacter::StopGrowing()
 	GrowthFactor = 0.5f;
 	ResetGrowState();
 }
-
-/*void ACapstone_CortezCharacter::IncrementalGrow()
-{
-	bPressedGrow = true;
-	GrowKeyHoldTime = 0.0f;
-	DoGrow();
-	//CheckGrowInput(GrowKeyHoldTime);
-}*/
 
 void ACapstone_CortezCharacter::StopIncrementalGrowing()
 {
@@ -595,13 +576,6 @@ void ACapstone_CortezCharacter::StopShrinking()
 	ShrinkFactor = 0.5f;
 	ResetShrinkState();
 }
-
-/*void ACapstone_CortezCharacter::IncrementalShrink()
-{
-	bPressedShrink = true;
-	ShrinkKeyHoldTime = 0.0f;
-	DoShrink();
-}*/
 
 void ACapstone_CortezCharacter::StopIncrementalShrinking()
 {
@@ -903,6 +877,7 @@ void ACapstone_CortezCharacter::UpdateForMovementMode()
 	{
 	case CharacterMovementMode::WalkDefault:
 		GetCharacterMovement()->UCharacterMovementComponent::SetMovementMode(MOVE_Walking);
+		bUseControllerRotationYaw = false;
 		break;
 	case CharacterMovementMode::Fly:
 		GetCharacterMovement()->UCharacterMovementComponent::SetMovementMode(MOVE_Flying);
