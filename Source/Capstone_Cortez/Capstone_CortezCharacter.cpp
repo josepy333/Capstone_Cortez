@@ -57,11 +57,12 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	CameraBoom->TargetArmLength = CurrentBoomLength3P; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-	// Create a follow cameraf
+	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// Useed for follow camera
 	CameraFollowTurnAngleExponent = .5f;
 	CameraFollowTurnRate = .6f;
 	CameraResetSpeed = 2.f;
@@ -73,20 +74,25 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	IsAutoReset = false;
 	AutoResetSpeed = .15f;
 
+	// Character Size variables
 	NormalSize = 1.0f;
 	GrowthFactor = 0.5f;
 	GrowMaxSize = 10.0f;
 	ShrinkMinSize = 0.25f;
 
+	// Maximum grow/ shrink hold times
 	GrowMaxHoldTime = 10;
 	ShrinkMaxHoldTime = 10;
 
+	// Default scale values for scale modes
 	NormalScale = FVector(1.0f, 1.0f, 1.0f);
 	MaxScale = FVector(5.773502f, 5.773502f, 5.773502f);
 	MinScale = FVector(0.144338f, 0.144338f, 0.144338f);
 
+	// Give character the ability to fly
 	GetCharacterMovement()->UCharacterMovementComponent::NavAgentProps.bCanFly = true;
 
+	// Set character in normal scale mode to begin
 	SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
@@ -408,35 +414,6 @@ void ACapstone_CortezCharacter::JetPack(float Value)
 //////////////////////////////////////////////////////////////////////////
 // Grow Functions
 
-bool ACapstone_CortezCharacter::CanGrow() const
-{
-	return CanGrowInternal();
-}
-
-bool ACapstone_CortezCharacter::CanGrowInternal_Implementation() const
-{
-	// Ensure the character isn't currently crouched.
-	bool bCanGrow = true;									//!bIsCrouched;
-
-	/* Ensure that the CharacterMovement state is valid
-	bCanGrow &=  CharacterMovement &&
-		CharacterMovement->IsJumpAllowed() &&
-		!CharacterMovement->bWantsToCrouch &&
-		// Can only grow from the ground, or if already falling.
-		(CharacterMovement->IsMovingOnGround() || CharacterMovement->IsFalling());*/
-
-	if (bCanGrow)
-	{
-		// Ensure GrowHoldTime is valid.
-		if (GetGrowMaxHoldTime() <= 0.0f)
-		{
-			bCanGrow = false;
-		}
-	}
-
-	return bCanGrow;
-}
-
 void ACapstone_CortezCharacter::Grow()
 {
 	bPressedGrow = true;
@@ -457,50 +434,6 @@ void ACapstone_CortezCharacter::StopIncrementalGrowing()
 	ResetGrowState();
 }
 
-
-bool ACapstone_CortezCharacter::DoGrow()
-{
-	if (bPressedGrow && CanGrow())
-	{
-		FVector currentScale = GetActorScale3D();
-		if ((int)GrowKeyHoldTime % 2 == 0)
-		{
-			SetActorScale3D(currentScale * 2);
-			CurrentBoomLength3P = CurrentBoomLength3P * doubleIncrement;			//Needed to adjust 3rd person camera boom
-			CameraBoom->TargetArmLength = CurrentBoomLength3P;
-		}
-			
-		return true;
-	}
-
-	return false;
-}
-
-void ACapstone_CortezCharacter::CheckGrowInput(float DeltaTime)
-{
-	if (Controller != NULL)
-	{
-		if (bPressedGrow)
-		{
-			// Increment our timer first so calls to IsJumpProvidingForce() will return true
-			GrowKeyHoldTime += DeltaTime;
-
-
-			const bool bDidGrow = CanGrow() && DoGrow();
-			if (!bWasGrowing && bDidGrow)
-			{
-				DoGrow();
-			}
-
-			bWasGrowing = bDidGrow;
-		}
-
-		else if (bWasGrowing)
-		{
-			ResetGrowState();
-		}
-	}
-}
 
 void ACapstone_CortezCharacter::ResetGrowState()
 {
@@ -525,43 +458,6 @@ float ACapstone_CortezCharacter::GetGrowMaxHoldTime() const
 //////////////////////////////////////////////////////////////////////////
 // Shrink Functions
 
-bool ACapstone_CortezCharacter::CanShrink() const
-{
-	return CanShrinkInternal();
-}
-
-bool ACapstone_CortezCharacter::CanShrinkInternal_Implementation() const
-{
-	// Ensure the character isn't currently crouched.
-	bool bCanShrink = true;										//!bIsCrouched;
-
-	/* Ensure that the CharacterMovement state is valid
-	bCanShrink &=  CharacterMovement &&
-	CharacterMovement->IsJumpAllowed() &&
-	!CharacterMovement->bWantsToCrouch &&
-	// Can only Shrink from the ground, or if already falling.
-	(CharacterMovement->IsMovingOnGround() || CharacterMovement->IsFalling());*/
-
-	if (bCanShrink)
-	{
-		// Ensure ShrinkHoldTime is valid.
-		if (GetShrinkMaxHoldTime() <= 0.0f)
-		{
-			bCanShrink = false;
-		}
-	}
-
-	return bCanShrink;
-}
-
-void ACapstone_CortezCharacter::OnShrink_Implementation()
-{
-}
-
-bool ACapstone_CortezCharacter::IsShrinkProvidingForce() const
-{
-	return (bPressedShrink && ShrinkKeyHoldTime > 0.0f && ShrinkKeyHoldTime < ShrinkMaxHoldTime);
-}
 
 void ACapstone_CortezCharacter::Shrink()
 {
@@ -582,45 +478,6 @@ void ACapstone_CortezCharacter::StopIncrementalShrinking()
 	bPressedShrink = false;
 	ShrinkFactor = 0.5f;
 	ResetShrinkState();
-}
-
-bool ACapstone_CortezCharacter::DoShrink()
-{
-	if (bPressedShrink && CanShrink())
-	{
-		FVector currentScale = GetActorScale3D();
-		if ((int)ShrinkKeyHoldTime % 2 == 0)
-			SetActorScale3D(currentScale / 2);
-		return true;
-	}
-
-	return false;
-}
-
-void ACapstone_CortezCharacter::CheckShrinkInput(float DeltaTime)
-{
-	if (Controller != NULL)
-	{
-		if (bPressedShrink)
-		{
-			// Increment our timer first so calls to IsShrinkProvidingForce() will return true
-			ShrinkKeyHoldTime += DeltaTime;
-
-
-			const bool bDidShrink = CanShrink() && DoShrink();
-			if (!bWasShrinking && bDidShrink)
-			{
-				OnShrink();
-			}
-
-			bWasShrinking = bDidShrink;
-		}
-
-		else if (bWasShrinking)
-		{
-			ResetShrinkState();
-		}
-	}
 }
 
 void ACapstone_CortezCharacter::ResetShrinkState()
@@ -854,11 +711,13 @@ void ACapstone_CortezCharacter::CycleMovement()
 // Set Movement mode
 void ACapstone_CortezCharacter::SetMovementMode(CharacterMovementMode::Type newMovementMode)
 {
+	// Set up a latent action timer so movement is not allowed during animation
 	FLatentActionInfo LatentActionInfo;
 	LatentActionInfo.CallbackTarget = this;
-	LatentActionInfo.ExecutionFunction = "TestCall";
+	LatentActionInfo.ExecutionFunction = "ReinitializeMovement";
 	LatentActionInfo.UUID = 123;
 	LatentActionInfo.Linkage = 0;
+
 	MovementModeEnum = newMovementMode;
 	UpdateForMovementMode();
 	if (newMovementMode == 1)
@@ -898,10 +757,9 @@ bool ACapstone_CortezCharacter::IsFlyMode()
 	return IsFlying(MovementModeEnum);
 }
 
-void ACapstone_CortezCharacter::TestCall()
+/** Sets controller to accept movements **/
+void ACapstone_CortezCharacter::ReinitializeMovement()
 {
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, INFINITE, FColor::Black, TEXT("AMyActor::TestCall"));
 	Controller->ResetIgnoreMoveInput();
 }
 

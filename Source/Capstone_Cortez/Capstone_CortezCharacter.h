@@ -9,6 +9,9 @@
 
 
 
+//////////////////////////////////////////////////////////////////////////////
+//////////////// CHARACTER ENUMS
+
 UENUM(BlueprintType)
 namespace CharacterCameraMode
 {
@@ -42,16 +45,21 @@ namespace CharacterMovementMode
 	};
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+/**Determine if character is in first person mode **/
 static inline bool IsFirstPerson(const CharacterCameraMode::Type CameraMode)
 {
 	return (CameraMode == CharacterCameraMode::FirstPerson);
 }
 
+/**Determine if character is in third person mode **/
 static inline bool IsThirdPerson(const CharacterCameraMode::Type CameraMode)
 {
 	return !IsFirstPerson(CameraMode);
 }
 
+/** Get name for camera mode **/
 static inline FString GetNameForCameraMode(const CharacterCameraMode::Type CameraMode)
 {
 	switch (CameraMode)
@@ -67,21 +75,25 @@ static inline FString GetNameForCameraMode(const CharacterCameraMode::Type Camer
 	}
 }
 
+/**Determine if character is in normal scale mode **/
 static inline bool IsNormalScale(const CharacterScaleMode::Type ScaleMode)
 {
 	return (ScaleMode == CharacterScaleMode::NormalScale);
 }
 
+/**Determine if character is in maximum scale mode **/
 static inline bool IsMaxScale(const CharacterScaleMode::Type ScaleMode)
 {
 	return (ScaleMode == CharacterScaleMode::MaxScale);
 }
 
+/**Determine if character is in minimum scale mode **/
 static inline bool IsMinScale(const CharacterScaleMode::Type ScaleMode)
 {
 	return (ScaleMode == CharacterScaleMode::MinScale);
 }
 
+/** Get name for scale mode **/
 static inline FString GetNameForScaleMode(const CharacterScaleMode::Type ScaleMode)
 {
 	switch (ScaleMode)
@@ -100,16 +112,19 @@ static inline FString GetNameForScaleMode(const CharacterScaleMode::Type ScaleMo
 	}
 }
 
+/**Determine if character is in walking mode **/
 static inline bool IsWalking(const CharacterMovementMode::Type MovementMode)
 {
 	return (MovementMode == CharacterMovementMode::WalkDefault);
 }
 
+/**Determine if character is in fly mode **/
 static inline bool IsFlying(const CharacterMovementMode::Type MovementMode)
 {
 	return (MovementMode == CharacterMovementMode::Fly);
 }
 
+/** Get name for movmement mode **/
 static inline FString GetNameForMovementMode(const CharacterMovementMode::Type MovementMode)
 {
 	switch (MovementMode)
@@ -327,20 +342,6 @@ public:
 		virtual void Shrink();
 
 	/**
-	* Perform grow. Called by Character when a grow has been detected because Character->bPressedGrow was true. Checks CanGrow().
-	* Note that you should usually trigger a grow through Character::Grow() instead.
-	* @return	True if the grow was triggered successfully.
-	*/
-	virtual bool DoGrow();
-
-	/**
-	* Perform shrink. Called by Character when a shrink has been detected because Character->bPressedShrink was true. Checks CanShrink().
-	* Note that you should usually trigger a shrink through Character::Shrink() instead.
-	* @return	True if the shrink was triggered successfully.
-	*/
-	virtual bool DoShrink();
-
-	/**
 	* Stop the character from shrinking on the next update.
 	* Call this from an input event (such as a button 'up' event) to cease applying
 	* shrink. If this is not called, then shrink will be applied
@@ -358,89 +359,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Character)
 		virtual void StopIncrementalShrinking();
 
-	/**
-	* Check if the character can grow in the current state.
-	*
-	* The default implementation may be overridden or extended by implementing the custom CanJump event in Blueprints.
-	*
-	* @Return Whether the character can jump in the current state.
-	*/
-	UFUNCTION(BlueprintCallable, Category = Character)
-		bool CanGrow() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Custom")
-		void TestCall();
 
 protected:
-	/**
-	* Customizable event to check if the character can grow in the current state.
-	* Default implementation returns true if the character is on the ground and not crouching,
-	* has a valid CharacterMovementComponent and CanEverGrow() returns true.f
-	* As well as returning true when on the ground, it also returns true when GetMaxGrowTime is more
-	* than zero and IsGrowing returns true.
-	*
-	*
-	* @Return Whether the character can grow in the current state.*/
-	
-
-	UFUNCTION(BlueprintNativeEvent, Category = Character, meta = (DisplayName = "CanGrow"))
-		bool CanGrowInternal() const;
-	virtual bool CanGrowInternal_Implementation() const;
 
 	void ResetGrowState();
 
 protected:
-	/**
-	* Customizable event to check if the character can Shrink in the current state.
-	* Default implementation returns true if the character is on the ground and not crouching,
-	* has a valid CharacterMovementComponent and CanEverShrink() returns true.
-	* As well as returning true when on the ground, it also returns true when GetMaxShrinkTime is more
-	* than zero and IsShrinking returns true.
-	*
-	*
-	* @Return Whether the character can Shrink in the current state.
-	*/
-
-	UFUNCTION(BlueprintNativeEvent, Category = Character, meta = (DisplayName = "CanShrink"))
-		bool CanShrinkInternal() const;
-	virtual bool CanShrinkInternal_Implementation() const;
 
 	void ResetShrinkState();
 
 public:
 
-	/**
-	* Check if the character can shrink in the current state.
-	*
-	* The default implementation may be overridden or extended by implementing the custom CanJump event in Blueprints.
-	*
-	* @Return Whether the character can jump in the current state.
-	*/
-	UFUNCTION(BlueprintCallable, Category = Character)
-		bool CanShrink() const;
-
-	/** Trigger grow if grow button has been pressed. */
-	virtual void CheckGrowInput(float DeltaTime);
 
 	/** Reset input state after having checked input. */
 	virtual void ClearGrowInput();
 
-	/** Trigger shrink if shrink button has been pressed. */
-	virtual void CheckShrinkInput(float DeltaTime);
 
 	/** Reset input state after having checked input. */
 	virtual void ClearShrinkInput();
-
-	/** Event fired when the character has just started shrinking */
-	UFUNCTION(BlueprintNativeEvent, Category = Character)
-	void OnShrink();
-	virtual void OnShrink_Implementation();
-
-	/**
-	* True if shrink is actively providing a force, such as when the shrink key is held and the time it has been held is less than ShrinkMaxHoldTime.
-	*/
-	UFUNCTION(BlueprintCallable, Category = Character)
-		virtual bool IsShrinkProvidingForce() const;
 
 	/**
 	* Get the maximum grow time for the character.
@@ -573,6 +509,10 @@ public:
 	/** Sets properties based on Movement mode value */
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void UpdateForMovementMode();
+
+	/** Reinitiallize movement **/
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+		void ReinitializeMovement();
 
 public:
 	/** Returns CameraBoom subobject **/
