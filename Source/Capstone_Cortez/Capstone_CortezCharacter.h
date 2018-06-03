@@ -5,7 +5,10 @@
 #pragma once
 #include "GameFramework/Character.h"
 #include "GameFramework/MovementComponent.h"
+#include "Interaction.h"
+#include "Pickup.h"
 #include "Capstone_CortezCharacter.generated.h"
+
 
 
 

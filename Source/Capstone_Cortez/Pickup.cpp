@@ -1,4 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Joseph Cortez
+// Capstone project
 
 #include "Capstone_Cortez.h"
 #include "Capstone_CortezCharacter.h"

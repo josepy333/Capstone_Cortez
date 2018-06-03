@@ -696,7 +696,7 @@ bool ACapstone_CortezCharacter::IsMaxScaleMode()
 // Cycles the character's movement mode
 void ACapstone_CortezCharacter::CycleMovement()
 {
-	if (IsAlreadyMinScaleMode)
+	if (IsAlreadyMinScaleMode && !GetCharacterMovement()->IsFalling())
 	{
 		int newMovementMode = (int)MovementModeEnum + 1;
 
