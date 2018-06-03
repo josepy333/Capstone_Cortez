@@ -94,6 +94,9 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 
 	// Set character in normal scale mode to begin
 	SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
+
+	// Set character's forward reach
+	CharacterReach = 75.0f;
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -277,7 +280,8 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 			SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::MinScale);
 	}
 
-	
+	// Checking for interaction item in front of player
+	CheckForInteractionItem();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -299,6 +303,8 @@ void ACapstone_CortezCharacter::SetupPlayerInputComponent(class UInputComponent*
 	PlayerInputComponent->BindAction("IncrementalGrow", IE_Released, this, &ACapstone_CortezCharacter::StopIncrementalGrowing);
 	PlayerInputComponent->BindAction("IncrementalShrink", IE_Pressed, this, &ACapstone_CortezCharacter::IncrementalShrink);
 	PlayerInputComponent->BindAction("IncrementalShrink", IE_Released, this, &ACapstone_CortezCharacter::StopIncrementalShrinking);
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ACapstone_CortezCharacter::Interact);
+	PlayerInputComponent->BindAction("ToggleInventoryScreen", IE_Pressed, this, &ACapstone_CortezCharacter::ToggleInventory);
 
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ACapstone_CortezCharacter::MoveForward);
@@ -763,5 +769,65 @@ bool ACapstone_CortezCharacter::IsFlyMode()
 void ACapstone_CortezCharacter::ReinitializeMovement()
 {
 	Controller->ResetIgnoreMoveInput();
+}
+
+// Interact with object
+void ACapstone_CortezCharacter::Interact()
+{
+	if (CurrentInteraction != nullptr)
+	{
+		CurrentInteraction->Interact_Implementation();
+	}
+}
+
+// Toggle Inventory Screen
+void ACapstone_CortezCharacter::ToggleInventory()
+{
+	// Toggle inventory code
+}
+
+// Check if there is an interaction item in front of character
+void ACapstone_CortezCharacter::CheckForInteractionItem()
+{
+	// Ray Tracing variables
+	FVector StartLineTrace;
+	FVector EndLineTrace;
+	
+	if (IsFirstPersonMode())
+	{
+		StartLineTrace = FollowCamera->GetComponentLocation();
+		EndLineTrace = (FollowCamera->GetForwardVector() * CharacterReach) + StartLineTrace;
+
+	}
+	else
+	{
+		StartLineTrace = CameraBoom->GetComponentLocation();
+		EndLineTrace = (CameraBoom->GetForwardVector() * CharacterReach) + StartLineTrace;
+	}
+
+	// Declare hitresult for raycaster
+	FHitResult HitResult;
+
+	// Initialize query params & ignore character
+	FCollisionQueryParams CQP;
+	CQP.AddIgnoredActor(this);
+
+	// Cast the line trace
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartLineTrace, EndLineTrace, ECC_WorldDynamic, CQP);
+	AInteraction* PotentialInteraction = Cast<AInteraction>(HitResult.GetActor());
+
+	if (PotentialInteraction == NULL)
+	{
+		ScreenText = "";
+		CurrentInteraction = nullptr;
+		return;
+	}
+	else
+	{
+		CurrentInteraction = PotentialInteraction;
+		ScreenText = PotentialInteraction->InteractionText;
+	}
+			
+	 
 }
 

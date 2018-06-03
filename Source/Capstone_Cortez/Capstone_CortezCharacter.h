@@ -517,6 +517,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 		void ReinitializeMovement();
 
+private:
+	/** Toggle the inventory **/
+	void ToggleInventory();
+
+	/**Interacts with interaction item **/
+	void Interact();
+
+	/** Check if there is an interaction item within near distance in front of player **/
+	void CheckForInteractionItem();
+
+	/** The character's reach **/
+	float CharacterReach;
+
+	/** The Text to pop up on screen **/
+	FString ScreenText;
+
+	/** The interaction item the character is looking at **/
+	AInteraction* CurrentInteraction;
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
