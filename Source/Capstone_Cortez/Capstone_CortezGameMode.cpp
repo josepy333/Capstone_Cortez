@@ -3,6 +3,14 @@
 #include "Capstone_Cortez.h"
 #include "Capstone_CortezGameMode.h"
 #include "Capstone_CortezCharacter.h"
+#include "InventoryHUD.h"
+#include "Blueprint/UserWidget.h"
+
+void ACapstone_CortezGameMode::BeginPlay()
+{
+	// Applies HUD to screen when game starts
+	ApplyHUDChanges();
+}
 
 ACapstone_CortezGameMode::ACapstone_CortezGameMode()
 {
@@ -12,4 +20,69 @@ ACapstone_CortezGameMode::ACapstone_CortezGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+
+	// Use custome hud class
+	HUDClass = AInventoryHUD::StaticClass();
+
+	HUDState = EHUDState::HS_InGame;
+}
+
+void ACapstone_CortezGameMode::ApplyHUDChanges()
+{
+	if (CurrentWidget != nullptr)
+		CurrentWidget->RemoveFromParent();
+
+	switch (HUDState)
+	{
+		case EHUDState::HS_InGame:
+		{
+			ApplyHUD(InGameHUDClass, false, false);
+			break;
+		}
+		case EHUDState::HS_Inventory:
+		{
+			ApplyHUD(InventoryHUDClass, true, true);
+			break;
+		}
+		default:
+		{
+			ApplyHUD(InGameHUDClass, false, false);
+			break;
+		}
+
+	}
+}
+
+uint8 ACapstone_CortezGameMode::GetHUDState()
+{
+	return HUDState;
+}
+
+void ACapstone_CortezGameMode::ChangeHUDState(uint8 NewHUDState)
+{
+	HUDState = NewHUDState;
+	ApplyHUDChanges();
+}
+
+bool ACapstone_CortezGameMode::ApplyHUD(TSubclassOf<class UUserWidget> WidgetToApply, bool bShowMouseCursor, bool EnableClickEvents)
+{
+	// Get a reference to the character and the controller
+	ACapstone_CortezCharacter* MyCharacter = Cast<ACapstone_CortezCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+	APlayerController* MyController = GetWorld()->GetFirstPlayerController();
+
+	if (WidgetToApply != nullptr)
+	{
+		MyController->bShowMouseCursor = bShowMouseCursor;
+		MyController->bEnableClickEvents = EnableClickEvents;
+
+		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), WidgetToApply);
+
+		if (CurrentWidget != nullptr)
+		{
+			CurrentWidget->AddToViewport();
+			return true;
+		}
+		else return false;
+	}
+	else return false;
 }

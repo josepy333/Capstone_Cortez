@@ -5,6 +5,6 @@
 #ifndef __CAPSTONE_CORTEZ_H__
 #define __CAPSTONE_CORTEZ_H__
 
-#include "EngineMinimal.h"
+#include "Engine.h"
 
 #endif
