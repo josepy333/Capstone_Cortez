@@ -5,6 +5,7 @@
 #include "Engine/Canvas.h"
 #include "TextureResource.h"
 #include "CanvasItem.h"
+#include "Capstone_CortezCharacter.h"
 
 AInventoryHUD::AInventoryHUD()
 {
@@ -16,21 +17,36 @@ AInventoryHUD::AInventoryHUD()
 
 void AInventoryHUD::DrawHUD()
 {
-	Super::DrawHUD();
 
-	// Draw very simple crosshair
+	// Get reference to character
+	ACapstone_CortezCharacter* MyCharacter = Cast<ACapstone_CortezCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
 
-	// find center of the Canvas
-	const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
+	// Only draw HUD if in first person mode
+	if (MyCharacter->IsFirstPersonMode())
+	{
+		Super::DrawHUD();
 
-	// offset by half the texture's dimensions so that the center of the texture aligns with the center of the Canvas
-	const FVector2D CrosshairDrawPosition((Center.X),
-		(Center.Y));
+		// Draw very simple crosshair
 
-	// draw the crosshair
-	FCanvasTileItem TileItem(CrosshairDrawPosition, CrosshairTex->Resource, FLinearColor::White);
-	TileItem.BlendMode = SE_BLEND_Translucent;
-	Canvas->DrawItem(TileItem);
+		// find center of the Canvas
+		const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
+
+		// offset by half the texture's dimensions so that the center of the texture aligns with the center of the Canvas
+		const FVector2D CrosshairDrawPosition((Center.X),
+			(Center.Y));
+
+		// draw the crosshair
+		FCanvasTileItem TileItem(CrosshairDrawPosition, CrosshairTex->Resource, FLinearColor::White);
+		TileItem.BlendMode = SE_BLEND_Translucent;
+		Canvas->DrawItem(TileItem);
+
+	}
+	
+	
+
+	
+
+	
 }
 
 

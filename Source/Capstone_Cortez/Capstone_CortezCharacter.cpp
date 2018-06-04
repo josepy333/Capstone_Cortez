@@ -11,6 +11,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "EngineGlobals.h"
 #include "Engine.h"
+#include "InventoryHUD.h"
 
 
 //////////////////////////////////////////////////////////////////////////

@@ -458,13 +458,13 @@ protected:
 	/** Sets properties based on camera mode value */
 	void UpdateForCameraMode();
 
+public:
 	/** Is Camera in first person mode */
 	bool IsFirstPersonMode();
 
 	/** Is Camera in third person mode */
 	bool IsThirdPersonMode();
 
-public:
 	bool IsAlreadyMinScaleMode = false;
 	bool IsAlreadyMaxScaleMode = false;
 	bool IsAlreadyNormalScaleMode = true;
