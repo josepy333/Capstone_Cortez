@@ -530,11 +530,35 @@ private:
 	/** The character's reach **/
 	float CharacterReach;
 
-	/** The Text to pop up on screen **/
-	FString ScreenText;
-
 	/** The interaction item the character is looking at **/
 	AInteraction* CurrentInteraction;
+
+	/** Player inventory stored in an array **/
+	UPROPERTY(EditAnywhere)
+		TArray<APickup*> Inventory;
+
+public:
+	// Inventory HUD
+
+	/** The Text to pop up on screen **/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+	FString ScreenText;
+
+	/** On true, adds item to inventory **/
+	UFUNCTION(BlueprintPure, Category = "Inventory Functions")
+	bool AddItemToInventory(APickup* Item);
+
+	/** Get thumbnail for inventory slot **/
+	UFUNCTION(BlueprintPure, Category = "Inventory Functions")
+	UTexture2D* GetThumbnailAtInventorySlot(int32 Slot);
+
+	/** Get item name for inventory slot **/
+	UFUNCTION(BlueprintPure, Category = "Inventory Functions")
+	FString GetItemNameAtInventorySlot(int32 Slot);
+
+	/** Use the item at a given inventory slot **/
+	UFUNCTION(BlueprintCallable, Category = "Inventory Functions")
+	void UseItemAtInventorySlot(int32 Slot);
 
 public:
 	/** Returns CameraBoom subobject **/

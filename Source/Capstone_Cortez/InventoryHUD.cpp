@@ -41,12 +41,7 @@ void AInventoryHUD::DrawHUD()
 		Canvas->DrawItem(TileItem);
 
 	}
-	
-	
-
-	
-
-	
+		
 }
 
 

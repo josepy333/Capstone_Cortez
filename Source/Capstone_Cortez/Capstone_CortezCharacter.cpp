@@ -832,3 +832,57 @@ void ACapstone_CortezCharacter::CheckForInteractionItem()
 	 
 }
 
+bool ACapstone_CortezCharacter::AddItemToInventory(APickup * Item)
+{
+	if (Item != NULL)
+	{
+		// Find first empty slot
+		const int32 AvailableSlot = Inventory.Find(nullptr);
+
+		if (AvailableSlot != INDEX_NONE)
+		{
+			Inventory[AvailableSlot] = Item;
+			return true;
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Your inventory is full"));
+			return false;
+		}
+
+	}
+	else return false;
+	
+}
+
+UTexture2D * ACapstone_CortezCharacter::GetThumbnailAtInventorySlot(int32 Slot)
+{
+	if (Inventory[Slot] != NULL)
+	{
+		return Inventory[Slot]->PickupThumbnail;
+	}
+	else return nullptr;
+}
+
+FString ACapstone_CortezCharacter::GetItemNameAtInventorySlot(int32 Slot)
+{
+	if (Inventory[Slot] != NULL)
+	{
+		return Inventory[Slot]->ItemName;
+	}
+	else return FString("None");
+}
+
+void ACapstone_CortezCharacter::UseItemAtInventorySlot(int32 Slot)
+{
+	if (Inventory[Slot] != NULL)
+	{
+		Inventory[Slot]->Use_Implementation();
+
+		// Remove item from inventory
+		Inventory[Slot] = NULL;
+	}
+}
+
+
+
