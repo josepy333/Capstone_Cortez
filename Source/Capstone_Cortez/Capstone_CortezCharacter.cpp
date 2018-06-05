@@ -12,6 +12,7 @@
 #include "EngineGlobals.h"
 #include "Engine.h"
 #include "InventoryHUD.h"
+#include "Capstone_CortezGameMode.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -97,7 +98,7 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
 
 	// Set character's forward reach
-	CharacterReach = 75.0f;
+	CharacterReach = 150.0f;
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -106,6 +107,10 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 void ACapstone_CortezCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Inventory.SetNum(6);
+
+	CurrentInteraction = nullptr;
 }
 
 // Called every frame
@@ -577,7 +582,7 @@ bool ACapstone_CortezCharacter::IsThirdPersonMode()
 // Cycle Grow States
 void ACapstone_CortezCharacter::IncrementalGrow()
 {
-	if (IsWalkMode())
+	if (IsWalkMode() && IsThirdPersonMode())
 	{
 		int newCharacterScaleMode = (int)CharacterScaleModeEnum + 1;
 
@@ -590,7 +595,7 @@ void ACapstone_CortezCharacter::IncrementalGrow()
 // Cycle Shrink States
 void ACapstone_CortezCharacter::IncrementalShrink()
 {
-	if (IsWalkMode())
+	if (IsWalkMode() && IsThirdPersonMode())
 	{
 		int newCharacterScaleMode = (int)CharacterScaleModeEnum - 1;
 
@@ -784,7 +789,18 @@ void ACapstone_CortezCharacter::Interact()
 // Toggle Inventory Screen
 void ACapstone_CortezCharacter::ToggleInventory()
 {
-	// Toggle inventory code
+	ACapstone_CortezGameMode* GameMode = Cast<ACapstone_CortezGameMode>(GetWorld()->GetAuthGameMode());
+	
+	// Check player's HUD state if inventory is open
+	if (GameMode->GetHUDState() == GameMode->HS_InGame)
+	{
+		GameMode->ChangeHUDState(GameMode->HS_Inventory);
+	}
+	else
+	{
+		GameMode->ChangeHUDState(GameMode->HS_InGame);
+	}
+
 }
 
 // Check if there is an interaction item in front of character

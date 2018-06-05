@@ -30,7 +30,12 @@ void APickup::Interact_Implementation()
 {
 	ACapstone_CortezCharacter* Character = Cast<ACapstone_CortezCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
 
-	OnPickedUp();
+	if (Character->AddItemToInventory(this))
+	{
+		OnPickedUp();
+	}
+
+	
 }
 
 void APickup::Use_Implementation()
