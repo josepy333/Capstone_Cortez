@@ -537,6 +537,7 @@ private:
 	UPROPERTY(EditAnywhere)
 		TArray<APickup*> Inventory;
 
+
 public:
 	// Inventory HUD
 
@@ -560,6 +561,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory Functions")
 	void UseItemAtInventorySlot(int32 Slot);
 
+	/** Players health **/
+	int8  CharacterHealth;
+
+	/** Players max health **/
+	int8  CharacterMaxHealth;
+
+	/** Players min health **/
+	int8  CharacterMinHealth;
+	
+	/** Increase the character's health **/
+	void IncreaseCharacterHealth(int8 Health);
+
+	/** Decrease the character's health **/
+	void DecreaseCharacterHealth(int8 Health);
+
+	/** Get the character's health **/
+	int8 GetCharacterHealth();
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

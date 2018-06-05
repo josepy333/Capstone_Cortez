@@ -98,7 +98,16 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	SetCharacterScaleMode((CharacterScaleMode::Type) CharacterScaleMode::NormalScale);
 
 	// Set character's forward reach
-	CharacterReach = 150.0f;
+	CharacterReach = 250.0f;
+
+	// Set the character's health
+	CharacterHealth = 100;
+
+	// Set the character's max health
+	CharacterMaxHealth = 100;
+
+	// Set the character's min health
+	CharacterMinHealth = 0;
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -848,6 +857,7 @@ void ACapstone_CortezCharacter::CheckForInteractionItem()
 	 
 }
 
+/** Adds item to inventory slot **/
 bool ACapstone_CortezCharacter::AddItemToInventory(APickup * Item)
 {
 	if (Item != NULL)
@@ -871,6 +881,7 @@ bool ACapstone_CortezCharacter::AddItemToInventory(APickup * Item)
 	
 }
 
+/**Get's the thumbnail texture at the inventory slot **/
 UTexture2D * ACapstone_CortezCharacter::GetThumbnailAtInventorySlot(int32 Slot)
 {
 	if (Inventory[Slot] != NULL)
@@ -880,6 +891,7 @@ UTexture2D * ACapstone_CortezCharacter::GetThumbnailAtInventorySlot(int32 Slot)
 	else return nullptr;
 }
 
+/** Get's the item name at the inventory slot **/
 FString ACapstone_CortezCharacter::GetItemNameAtInventorySlot(int32 Slot)
 {
 	if (Inventory[Slot] != NULL)
@@ -889,6 +901,7 @@ FString ACapstone_CortezCharacter::GetItemNameAtInventorySlot(int32 Slot)
 	else return FString("None");
 }
 
+/** Use item at the inventory slot **/
 void ACapstone_CortezCharacter::UseItemAtInventorySlot(int32 Slot)
 {
 	if (Inventory[Slot] != NULL)
@@ -898,6 +911,24 @@ void ACapstone_CortezCharacter::UseItemAtInventorySlot(int32 Slot)
 		// Remove item from inventory
 		Inventory[Slot] = NULL;
 	}
+}
+
+/////////Health Functions
+////////////////////////////////////////////
+
+void ACapstone_CortezCharacter::IncreaseCharacterHealth(int8 Health)
+{
+	CharacterHealth = CharacterHealth + Health;
+}
+
+void ACapstone_CortezCharacter::DecreaseCharacterHealth(int8 Health)
+{
+	CharacterHealth = CharacterHealth - Health;
+}
+
+int8 ACapstone_CortezCharacter::GetCharacterHealth()
+{
+	return CharacterHealth;
 }
 
 
