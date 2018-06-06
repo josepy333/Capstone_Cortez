@@ -17,6 +17,4 @@ void APickup_Health::Interact_Implementation()
 	{
 		OnPickedUp();
 	}
-
-
 }
