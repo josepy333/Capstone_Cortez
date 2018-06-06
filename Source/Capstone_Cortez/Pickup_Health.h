@@ -16,7 +16,9 @@ class CAPSTONE_CORTEZ_API APickup_Health : public APickup
 public:
 	APickup_Health();
 
-	virtual void Use_Implementation() override;
+	virtual void Interact_Implementation() override;
 	
+	UPROPERTY(EditAnywhere, Category = "HealthProperties")
+	uint8 AmountOfHealth;
 	
 };

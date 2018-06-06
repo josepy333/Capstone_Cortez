@@ -562,7 +562,8 @@ public:
 	void UseItemAtInventorySlot(int32 Slot);
 
 	/** Players health **/
-	int8  CharacterHealth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+	uint8  CharacterHealth;
 
 	/** Players max health **/
 	int8  CharacterMaxHealth;
@@ -570,14 +571,17 @@ public:
 	/** Players min health **/
 	int8  CharacterMinHealth;
 	
-	/** Increase the character's health **/
-	void IncreaseCharacterHealth(int8 Health);
-
-	/** Decrease the character's health **/
-	void DecreaseCharacterHealth(int8 Health);
+	/** Update the character's health **/
+	UFUNCTION(BlueprintCallable, Category = "Inventory Functions")
+	void UpdateCharacterHealth(uint8 Health);
 
 	/** Get the character's health **/
-	int8 GetCharacterHealth();
+	UFUNCTION(BlueprintPure, Category = "HUD")
+	uint8 GetCharacterHealth();
+
+	/** See if you can use item in inventory **/
+	bool bCanUseItem = true;
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

@@ -904,7 +904,7 @@ FString ACapstone_CortezCharacter::GetItemNameAtInventorySlot(int32 Slot)
 /** Use item at the inventory slot **/
 void ACapstone_CortezCharacter::UseItemAtInventorySlot(int32 Slot)
 {
-	if (Inventory[Slot] != NULL)
+	if (Inventory[Slot] != NULL && bCanUseItem)
 	{
 		Inventory[Slot]->Use_Implementation();
 
@@ -916,20 +916,40 @@ void ACapstone_CortezCharacter::UseItemAtInventorySlot(int32 Slot)
 /////////Health Functions
 ////////////////////////////////////////////
 
-void ACapstone_CortezCharacter::IncreaseCharacterHealth(int8 Health)
+void ACapstone_CortezCharacter::UpdateCharacterHealth(uint8 Health)
 {
-	CharacterHealth = CharacterHealth + Health;
+	int8 newCharacterHealth;
+
+	newCharacterHealth = CharacterHealth + Health;
+
+	//  Check if we can add or decrease health and apply health change
+	if (CharacterHealth == 100)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("You are already at full health"));
+		bCanUseItem = false;
+	}
+	else if (newCharacterHealth <= 100 && newCharacterHealth >= 0)
+	{
+		CharacterHealth = newCharacterHealth;
+		bCanUseItem = true;
+	}
+	else if (newCharacterHealth > 100)
+	{
+		CharacterHealth = CharacterMaxHealth;
+		bCanUseItem = true;
+	}
+	else if (newCharacterHealth < 0)
+	{
+		CharacterHealth = CharacterMinHealth;
+		bCanUseItem = true;
+	}
 }
 
-void ACapstone_CortezCharacter::DecreaseCharacterHealth(int8 Health)
-{
-	CharacterHealth = CharacterHealth - Health;
-}
-
-int8 ACapstone_CortezCharacter::GetCharacterHealth()
+uint8 ACapstone_CortezCharacter::GetCharacterHealth()
 {
 	return CharacterHealth;
 }
+
 
 
 
