@@ -563,21 +563,21 @@ public:
 
 	/** Players health **/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
-	uint8  CharacterHealth;
+	int32 CharacterHealth;
 
 	/** Players max health **/
-	int8  CharacterMaxHealth;
+	int32  CharacterMaxHealth;
 
 	/** Players min health **/
-	int8  CharacterMinHealth;
+	int32  CharacterMinHealth;
 	
 	/** Update the character's health **/
 	UFUNCTION(BlueprintCallable, Category = "Inventory Functions")
-	void UpdateCharacterHealth(uint8 Health);
+	void UpdateCharacterHealth(int32 Health);
 
 	/** Get the character's health **/
 	UFUNCTION(BlueprintPure, Category = "HUD")
-	uint8 GetCharacterHealth();
+	int32 GetCharacterHealth();
 
 	/** See if you can use item in inventory **/
 	bool bCanUseItem = true;

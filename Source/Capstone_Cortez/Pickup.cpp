@@ -40,7 +40,7 @@ void APickup::Interact_Implementation()
 
 void APickup::Use_Implementation()
 {
-	GLog->Log("Use() from base pickup class");
+	//GLog->Log("Use() from base pickup class");
 }
 
 void APickup::OnPickedUp()

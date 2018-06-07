@@ -18,3 +18,15 @@ void APickup_Health::Interact_Implementation()
 		OnPickedUp();
 	}
 }
+
+void APickup_Health::Use_Implementation()
+{
+	
+	ACapstone_CortezCharacter* Character = Cast<ACapstone_CortezCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+
+
+	Character->UpdateCharacterHealth(AmountOfHealth);
+
+	//Destroy();
+	
+}

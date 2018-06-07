@@ -17,8 +17,9 @@ public:
 	APickup_Health();
 
 	virtual void Interact_Implementation() override;
+	virtual void Use_Implementation() override;
 	
 	UPROPERTY(EditAnywhere, Category = "HealthProperties")
-	uint8 AmountOfHealth;
+	int32 AmountOfHealth;
 	
 };

@@ -101,7 +101,7 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	CharacterReach = 250.0f;
 
 	// Set the character's health
-	CharacterHealth = 100;
+	CharacterHealth = 50;
 
 	// Set the character's max health
 	CharacterMaxHealth = 100;
@@ -799,15 +799,19 @@ void ACapstone_CortezCharacter::Interact()
 void ACapstone_CortezCharacter::ToggleInventory()
 {
 	ACapstone_CortezGameMode* GameMode = Cast<ACapstone_CortezGameMode>(GetWorld()->GetAuthGameMode());
+	APlayerController* MyController = GetWorld()->GetFirstPlayerController();
 	
 	// Check player's HUD state if inventory is open
 	if (GameMode->GetHUDState() == GameMode->HS_InGame)
 	{
 		GameMode->ChangeHUDState(GameMode->HS_Inventory);
+		MyController->SetInputMode(FInputModeGameAndUI());
+		
 	}
 	else
 	{
 		GameMode->ChangeHUDState(GameMode->HS_InGame);
+		MyController->SetInputMode(FInputModeGameOnly());
 	}
 
 }
@@ -882,7 +886,7 @@ bool ACapstone_CortezCharacter::AddItemToInventory(APickup * Item)
 }
 
 /**Get's the thumbnail texture at the inventory slot **/
-UTexture2D * ACapstone_CortezCharacter::GetThumbnailAtInventorySlot(int32 Slot)
+UTexture2D* ACapstone_CortezCharacter::GetThumbnailAtInventorySlot(int32 Slot)
 {
 	if (Inventory[Slot] != NULL)
 	{
@@ -904,7 +908,7 @@ FString ACapstone_CortezCharacter::GetItemNameAtInventorySlot(int32 Slot)
 /** Use item at the inventory slot **/
 void ACapstone_CortezCharacter::UseItemAtInventorySlot(int32 Slot)
 {
-	if (Inventory[Slot] != NULL && bCanUseItem)
+	if (Inventory[Slot] != NULL)
 	{
 		Inventory[Slot]->Use_Implementation();
 
@@ -916,9 +920,9 @@ void ACapstone_CortezCharacter::UseItemAtInventorySlot(int32 Slot)
 /////////Health Functions
 ////////////////////////////////////////////
 
-void ACapstone_CortezCharacter::UpdateCharacterHealth(uint8 Health)
+void ACapstone_CortezCharacter::UpdateCharacterHealth(int32 Health)
 {
-	int8 newCharacterHealth;
+	int32 newCharacterHealth;
 
 	newCharacterHealth = CharacterHealth + Health;
 
@@ -945,7 +949,7 @@ void ACapstone_CortezCharacter::UpdateCharacterHealth(uint8 Health)
 	}
 }
 
-uint8 ACapstone_CortezCharacter::GetCharacterHealth()
+int32 ACapstone_CortezCharacter::GetCharacterHealth()
 {
 	return CharacterHealth;
 }
