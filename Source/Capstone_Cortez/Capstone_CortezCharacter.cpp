@@ -25,6 +25,7 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bTickEvenWhenPaused = true;
 
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
@@ -806,7 +807,6 @@ void ACapstone_CortezCharacter::ToggleInventory()
 	{
 		GameMode->ChangeHUDState(GameMode->HS_Inventory);
 		MyController->SetInputMode(FInputModeGameAndUI());
-		
 	}
 	else
 	{

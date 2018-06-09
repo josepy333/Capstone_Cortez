@@ -27,6 +27,15 @@ ACapstone_CortezGameMode::ACapstone_CortezGameMode()
 	HUDState = EHUDState::HS_InGame;
 }
 
+void ACapstone_Cortez::Tick(float DeltaSeconds)
+{
+	ACapstone_CortezCharacter* MyCharacter = Cast<ACapstone_CortezCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+
+	if (MyCharacter->CharacterHealth = 0)
+		ChangeCurrentPlayState(EPlayState::GameOver);
+
+}
+
 void ACapstone_CortezGameMode::ApplyHUDChanges()
 {
 	if (CurrentWidget != nullptr)
@@ -86,3 +95,30 @@ bool ACapstone_CortezGameMode::ApplyHUD(TSubclassOf<class UUserWidget> WidgetToA
 	}
 	else return false;
 }
+
+EPlayState ACapstone_CortezGameMode::GetCurrentPlayState() const
+{
+	return CurrentPlayState;
+}
+
+void ACapstone_CortezGameMode::ChangeCurrentState(EPlayState NewPlayState)
+{
+	CurrentPlayState = NewPlayState;
+	ApplyPlayStateChanges(NewPlayState);
+
+}
+
+void ACapstone_CortezGameMode::ApplyPlayState(EPlayState NewPlayState)
+{
+	switch (NewPlayState)
+	{
+	case EPlayState::EPlaying:
+		break;
+	case EPlayState::EGameOver:
+		break;
+	case EPlayState::Unknown:
+		break;
+	}
+}
+
+
