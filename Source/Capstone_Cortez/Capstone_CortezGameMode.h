@@ -3,16 +3,16 @@
 #include "GameFramework/GameModeBase.h"
 #include "Capstone_CortezGameMode.generated.h"
 
-// enum to store the current state of gameplay
+
 UENUM(BlueprintType)
 namespace EPlayState
 {
 	enum Type
 	{
-		Playing				UMETA(DisplayName = "Playing"),
-		GameOver			UMETA(DisplayName = "GameOver"),
+		Playing					UMETA(DisplayName = "Playing"),
+		GameOver				UMETA(DisplayName = "GameOver"),
 
-		Unknown				UMETA(Hidden),
+		Unknown					UMETA(Hidden),
 	};
 }
 
@@ -23,10 +23,17 @@ class ACapstone_CortezGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
 
 public:
 	ACapstone_CortezGameMode();
+
+	/*enum to store Play State
+	enum class EPlayState : uint8
+	{
+		Playing,
+		GameOver,
+		Unknown
+	};*/
 	
 	// enum to store HUD state
 	enum EHUDState : uint8
@@ -47,21 +54,21 @@ public:
 	/** Apply HUD to screen, true if success **/
 	bool ApplyHUD(TSubclassOf<class UUserWidget> WidgetToApply, bool bShowMouseCursor, bool EnableClickEvents);
 
-	EPlayState GetCurrentPlayState() const;
+	uint8 GetCurrentPlayState();
 
 	/** Sets current state of the game mode **/
 	UFUNCTION(BlueprintCallable, Category = "Game Mode")
-	void ChangeCurrentPlayState(EPlayState NewPlayState);
+	void ChangeCurrentPlayState(uint8 NewPlayState);
 
 	
 
 
 protected:
 	uint8 HUDState;
-	EPlayState CurrentPlayState;
+	uint8 CurrentPlayState;
 
 	/** Apply Play state,**/
-	void ApplyPlayState(EPlayState NewPlayState);
+	void ApplyPlayState();
 
 	/*/** HUD in the Game **/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HUD Widgets", META = (BlueprintProtected = "true"))

@@ -10,6 +10,7 @@ void ACapstone_CortezGameMode::BeginPlay()
 {
 	// Applies HUD to screen when game starts
 	ApplyHUDChanges();
+
 }
 
 ACapstone_CortezGameMode::ACapstone_CortezGameMode()
@@ -25,15 +26,7 @@ ACapstone_CortezGameMode::ACapstone_CortezGameMode()
 	HUDClass = AInventoryHUD::StaticClass();
 
 	HUDState = EHUDState::HS_InGame;
-}
-
-void ACapstone_Cortez::Tick(float DeltaSeconds)
-{
-	ACapstone_CortezCharacter* MyCharacter = Cast<ACapstone_CortezCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
-
-	if (MyCharacter->CharacterHealth = 0)
-		ChangeCurrentPlayState(EPlayState::GameOver);
-
+	CurrentPlayState = EPlayState::Playing;
 }
 
 void ACapstone_CortezGameMode::ApplyHUDChanges()
@@ -96,26 +89,30 @@ bool ACapstone_CortezGameMode::ApplyHUD(TSubclassOf<class UUserWidget> WidgetToA
 	else return false;
 }
 
-EPlayState ACapstone_CortezGameMode::GetCurrentPlayState() const
+uint8 ACapstone_CortezGameMode::GetCurrentPlayState()
 {
 	return CurrentPlayState;
 }
 
-void ACapstone_CortezGameMode::ChangeCurrentState(EPlayState NewPlayState)
+void ACapstone_CortezGameMode::ChangeCurrentPlayState(uint8 NewPlayState)
 {
 	CurrentPlayState = NewPlayState;
-	ApplyPlayStateChanges(NewPlayState);
+	ApplyPlayState();
 
 }
 
-void ACapstone_CortezGameMode::ApplyPlayState(EPlayState NewPlayState)
+void ACapstone_CortezGameMode::ApplyPlayState()
 {
-	switch (NewPlayState)
+	switch (CurrentPlayState)
 	{
-	case EPlayState::EPlaying:
+	case EPlayState::Playing:
 		break;
-	case EPlayState::EGameOver:
+	case EPlayState::GameOver:
+	{
+		APlayerController * MyController = UGameplayStatics::GetPlayerController(this, 0);
+		MyController->SetCinematicMode(true, true, true);
 		break;
+	}	
 	case EPlayState::Unknown:
 		break;
 	}

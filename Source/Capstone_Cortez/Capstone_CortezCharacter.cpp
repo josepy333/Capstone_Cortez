@@ -11,8 +11,9 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "EngineGlobals.h"
 #include "Engine.h"
-#include "InventoryHUD.h"
 #include "Capstone_CortezGameMode.h"
+#include "InventoryHUD.h"
+
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -298,6 +299,14 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 
 	// Checking for interaction item in front of player
 	CheckForInteractionItem();
+
+	ACapstone_CortezGameMode* MyGameMode = Cast<ACapstone_CortezGameMode>(UGameplayStatics::GetGameMode(this));
+
+	// If health reaches 0, change state to game over
+	if (CharacterHealth == 0)
+	{
+		MyGameMode->ChangeCurrentPlayState(EPlayState::GameOver);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////

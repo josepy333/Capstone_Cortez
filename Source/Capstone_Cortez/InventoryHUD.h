@@ -15,13 +15,17 @@ class CAPSTONE_CORTEZ_API AInventoryHUD : public AHUD
 	
 public:
 	AInventoryHUD();
-
 	/** Primary draw call for the HUD */
 	virtual void DrawHUD() override;
 
-private:
+public:
 	/** Crosshair asset pointer */
+	UPROPERTY()
 	class UTexture2D* CrosshairTex;
+
+	/** Font asset pointer */
+	UPROPERTY()
+	class UFont* HUDFont;
 	
 	
 };
