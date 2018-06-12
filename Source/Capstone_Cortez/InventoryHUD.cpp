@@ -16,7 +16,7 @@ AInventoryHUD::AInventoryHUD()
 
 
 	// Set the font
-	static ConstructorHelpers::FObjectFinder<UFont> HUDFontOb(TEXT("Engine/Content/EngineFonts/RobotoDistanceField"));
+	static ConstructorHelpers::FObjectFinder<UFont> HUDFontOb(TEXT("Game/Fonts/RobotoDistanceField"));
 	HUDFont = HUDFontOb.Object;
 }
 

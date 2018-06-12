@@ -20,6 +20,6 @@ public:
 	virtual void Use_Implementation() override;
 	
 	UPROPERTY(EditAnywhere, Category = "HealthProperties")
-	int32 AmountOfHealth;
+	float AmountOfHealth;
 	
 };

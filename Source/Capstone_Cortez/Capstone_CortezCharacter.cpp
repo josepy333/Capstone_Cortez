@@ -103,13 +103,13 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	CharacterReach = 250.0f;
 
 	// Set the character's health
-	CharacterHealth = 50;
+	CharacterHealth = 50.0f;
 
 	// Set the character's max health
-	CharacterMaxHealth = 100;
+	CharacterMaxHealth = 100.0f;
 
 	// Set the character's min health
-	CharacterMinHealth = 0;
+	CharacterMinHealth = 0.0f;
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -307,6 +307,8 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 	{
 		MyGameMode->ChangeCurrentPlayState(EPlayState::GameOver);
 	}
+
+	GetCharacterHealth();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -929,11 +931,11 @@ void ACapstone_CortezCharacter::UseItemAtInventorySlot(int32 Slot)
 /////////Health Functions
 ////////////////////////////////////////////
 
-void ACapstone_CortezCharacter::UpdateCharacterHealth(int32 Health)
+void ACapstone_CortezCharacter::UpdateCharacterHealth(float Health)
 {
-	int32 newCharacterHealth;
+	float newCharacterHealth;
 
-	newCharacterHealth = CharacterHealth + Health;
+	newCharacterHealth = CharacterHealth - Health;
 
 	//  Check if we can add or decrease health and apply health change
 	if (CharacterHealth == 100)
@@ -941,24 +943,24 @@ void ACapstone_CortezCharacter::UpdateCharacterHealth(int32 Health)
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("You are already at full health"));
 		bCanUseItem = false;
 	}
-	else if (newCharacterHealth <= 100 && newCharacterHealth >= 0)
+	else if (newCharacterHealth <= 100.0f && newCharacterHealth >= 0.0f)
 	{
 		CharacterHealth = newCharacterHealth;
 		bCanUseItem = true;
 	}
-	else if (newCharacterHealth > 100)
+	else if (newCharacterHealth > 100.0f)
 	{
 		CharacterHealth = CharacterMaxHealth;
 		bCanUseItem = true;
 	}
-	else if (newCharacterHealth < 0)
+	else if (newCharacterHealth < 0.0f)
 	{
 		CharacterHealth = CharacterMinHealth;
 		bCanUseItem = true;
 	}
 }
 
-int32 ACapstone_CortezCharacter::GetCharacterHealth()
+float ACapstone_CortezCharacter::GetCharacterHealth()
 {
 	return CharacterHealth;
 }

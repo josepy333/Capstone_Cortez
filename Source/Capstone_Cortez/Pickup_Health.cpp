@@ -6,7 +6,7 @@
 
 APickup_Health::APickup_Health()
 {
-	AmountOfHealth = 0;
+	AmountOfHealth = 0.0f;
 }
 
 void APickup_Health::Interact_Implementation()
