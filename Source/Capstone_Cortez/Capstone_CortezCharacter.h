@@ -582,6 +582,11 @@ public:
 	/** See if you can use item in inventory **/
 	bool bCanUseItem = true;
 
+	void RestartGame();
+
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	void ReloadLevel();
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

@@ -103,7 +103,7 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 	CharacterReach = 250.0f;
 
 	// Set the character's health
-	CharacterHealth = 50.0f;
+	CharacterHealth = 75.0f;
 
 	// Set the character's max health
 	CharacterMaxHealth = 100.0f;
@@ -118,6 +118,9 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 void ACapstone_CortezCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("The Game has begun"));
 
 	Inventory.SetNum(6);
 
@@ -309,6 +312,7 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 	}
 
 	GetCharacterHealth();
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -963,6 +967,27 @@ void ACapstone_CortezCharacter::UpdateCharacterHealth(float Health)
 float ACapstone_CortezCharacter::GetCharacterHealth()
 {
 	return CharacterHealth;
+}
+
+void ACapstone_CortezCharacter::RestartGame()
+{
+	
+	FLatentActionInfo LatentActionInfo;
+	LatentActionInfo.CallbackTarget = this;
+	LatentActionInfo.ExecutionFunction = "ReloadLevel";
+	LatentActionInfo.UUID = 124;
+	LatentActionInfo.Linkage = 0;
+
+	APlayerController * MyController = UGameplayStatics::GetPlayerController(this, 0);
+	MyController->SetCinematicMode(false, false, false);
+	UKismetSystemLibrary::Delay(this, 5, LatentActionInfo);
+	//ReloadLevel();
+	//UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+}
+
+void ACapstone_CortezCharacter::ReloadLevel()
+{
+	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 }
 
 
