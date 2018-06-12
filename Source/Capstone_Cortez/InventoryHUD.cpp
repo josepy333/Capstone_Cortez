@@ -54,6 +54,15 @@ void AInventoryHUD::DrawHUD()
 		GetTextSize(TEXT("Game Over"), GameOverSize.X, GameOverSize.Y, HUDFont);
 		DrawText(TEXT("Game Over"), FColor::Red, (ScreenDimensions.X - GameOverSize.X) / 2.0f, (ScreenDimensions.Y - GameOverSize.Y) / 2.0f, HUDFont, 3.0f);
 	}
+
+	//GameWon HUD
+	if (MyGameMode->GetCurrentPlayState() == EPlayState::GameWon)
+	{
+		MyGameMode->ChangeHUDState(MyGameMode->HS_InGame);
+		FVector2D GameWonSize;
+		GetTextSize(TEXT("Congratulations! You found all of the keys!"), GameWonSize.X, GameWonSize.Y, HUDFont);
+		DrawText(TEXT("Congratulations! You found all of the keys!"), FColor::Red, (ScreenDimensions.X - GameWonSize.X) / 2.0f, (ScreenDimensions.Y - GameWonSize.Y) / 2.0f, HUDFont, 3.0f);
+	}
 	
 		
 }

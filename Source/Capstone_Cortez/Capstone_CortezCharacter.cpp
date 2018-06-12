@@ -110,8 +110,13 @@ ACapstone_CortezCharacter::ACapstone_CortezCharacter()
 
 	// Set the character's min health
 	CharacterMinHealth = 0.0f;
+
+	// The character starts with 0 keys
+	Keys = 0;
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+
+	
 }
 
 // Called when the game starts or when spawned
@@ -312,6 +317,12 @@ void ACapstone_CortezCharacter::Tick(float DeltaTime)
 	}
 
 	GetCharacterHealth();
+
+	// If obtain 4 keys, change state to game won
+	if (Keys == 4)
+	{
+		MyGameMode->ChangeCurrentPlayState(EPlayState::GameWon);
+	}
 
 }
 
@@ -969,6 +980,12 @@ float ACapstone_CortezCharacter::GetCharacterHealth()
 	return CharacterHealth;
 }
 
+void ACapstone_CortezCharacter::KeysUsed(uint8 Key)
+{
+	Keys += Key;
+}
+
+/** Restart the game after a 5 second delay **/
 void ACapstone_CortezCharacter::RestartGame()
 {
 	
@@ -981,10 +998,9 @@ void ACapstone_CortezCharacter::RestartGame()
 	APlayerController * MyController = UGameplayStatics::GetPlayerController(this, 0);
 	MyController->SetCinematicMode(false, false, false);
 	UKismetSystemLibrary::Delay(this, 5, LatentActionInfo);
-	//ReloadLevel();
-	//UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 }
 
+/** Reloads the level when game is finished **/
 void ACapstone_CortezCharacter::ReloadLevel()
 {
 	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);

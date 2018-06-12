@@ -114,7 +114,15 @@ void ACapstone_CortezGameMode::ApplyPlayState()
 		MyController->SetCinematicMode(true, true, true);
 		MyCharacter->RestartGame();
 		break;
-	}	
+	}
+	case EPlayState::GameWon:
+	{
+		APlayerController * MyController = UGameplayStatics::GetPlayerController(this, 0);
+		ACapstone_CortezCharacter* MyCharacter = Cast<ACapstone_CortezCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+		MyController->SetCinematicMode(true, true, true);
+		MyCharacter->RestartGame();
+		break;
+	}
 	case EPlayState::Unknown:
 		break;
 	}

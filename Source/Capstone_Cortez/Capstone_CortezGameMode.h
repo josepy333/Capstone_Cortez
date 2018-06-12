@@ -11,6 +11,7 @@ namespace EPlayState
 	{
 		Playing					UMETA(DisplayName = "Playing"),
 		GameOver				UMETA(DisplayName = "GameOver"),
+		GameWon					UMETA(DisplayName = "GameWon"),
 
 		Unknown					UMETA(Hidden),
 	};
@@ -26,14 +27,6 @@ class ACapstone_CortezGameMode : public AGameModeBase
 
 public:
 	ACapstone_CortezGameMode();
-
-	/*enum to store Play State
-	enum class EPlayState : uint8
-	{
-		Playing,
-		GameOver,
-		Unknown
-	};*/
 	
 	// enum to store HUD state
 	enum EHUDState : uint8

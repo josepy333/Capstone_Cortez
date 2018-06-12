@@ -587,6 +587,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void ReloadLevel();
 
+	/** Amount of Keys **/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+		uint8 Keys;
+
+	/** Update the amount of keys the character has used**/
+	UFUNCTION(BlueprintCallable, Category = "Inventory Functions")
+		void KeysUsed(uint8 Key);
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
