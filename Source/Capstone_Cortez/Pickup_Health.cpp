@@ -25,7 +25,7 @@ void APickup_Health::Use_Implementation()
 	ACapstone_CortezCharacter* Character = Cast<ACapstone_CortezCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
 
 
-	Character->UpdateCharacterHealth(AmountOfHealth);
+	Character->IncreaseCharacterHealth(AmountOfHealth);
 
 	//Destroy();
 	

@@ -946,26 +946,49 @@ void ACapstone_CortezCharacter::UseItemAtInventorySlot(int32 Slot)
 /////////Health Functions
 ////////////////////////////////////////////
 
-void ACapstone_CortezCharacter::UpdateCharacterHealth(float Health)
+void ACapstone_CortezCharacter::IncreaseCharacterHealth(float Health)
 {
 	float newCharacterHealth;
 
-	newCharacterHealth = CharacterHealth - Health;
+	newCharacterHealth = CharacterHealth + (Health);
 
-	//  Check if we can add or decrease health and apply health change
-	if (CharacterHealth == 100)
+	if (CharacterHealth == 100.0f)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("You are already at full health"));
 		bCanUseItem = false;
+	}
+
+	//  Check if we can add health and apply health change
+	if (newCharacterHealth > 100.0f)
+	{
+		CharacterHealth = CharacterMaxHealth;
 	}
 	else if (newCharacterHealth <= 100.0f && newCharacterHealth >= 0.0f)
 	{
 		CharacterHealth = newCharacterHealth;
 		bCanUseItem = true;
 	}
-	else if (newCharacterHealth > 100.0f)
+	else if (newCharacterHealth < 0.0f)
+	{
+		CharacterHealth = CharacterMinHealth;
+		bCanUseItem = true;
+	}
+}
+
+void ACapstone_CortezCharacter::DecreaseCharacterHealth(float Health)
+{
+	float newCharacterHealth;
+
+	newCharacterHealth = CharacterHealth - (Health);
+
+	//  Check if we can add or decrease health and apply health change
+	if (newCharacterHealth > 100.0f)
 	{
 		CharacterHealth = CharacterMaxHealth;
+	}
+	else if (newCharacterHealth <= 100.0f && newCharacterHealth >= 0.0f)
+	{
+		CharacterHealth = newCharacterHealth;
 		bCanUseItem = true;
 	}
 	else if (newCharacterHealth < 0.0f)

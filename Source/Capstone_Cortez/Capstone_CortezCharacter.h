@@ -571,9 +571,13 @@ public:
 	/** Players min health **/
 	float  CharacterMinHealth;
 	
-	/** Update the character's health **/
+	/** Increase the character's health **/
 	UFUNCTION(BlueprintCallable, Category = "Inventory Functions")
-	void UpdateCharacterHealth(float Health);
+	void IncreaseCharacterHealth(float Health);
+
+	/** Decrease the character's health **/
+	UFUNCTION(BlueprintCallable, Category = "Inventory Functions")
+	void DecreaseCharacterHealth(float Health);
 
 	/** Get the character's health **/
 	UFUNCTION(BlueprintPure, Category = "HUD")
