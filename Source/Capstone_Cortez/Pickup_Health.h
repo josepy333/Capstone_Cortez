@@ -1,4 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Joseph Cortez
+// Scalar: An Unreal Engine Game Prototype
 
 #pragma once
 

@@ -1,5 +1,5 @@
 // Joseph Cortez
-// Capstone project
+// Scalar: An Unreal Engine Game Prototype
 
 #pragma once
 

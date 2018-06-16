@@ -1,5 +1,5 @@
 // Joseph Cortez
-// Capstone project
+// Scalar: An Unreal Engine Game Prototype
 
 // Copyright 1998-2016 Epic Games, Inc. All Rights Reserved.
 
