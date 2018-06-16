@@ -5,6 +5,7 @@ The prototype is designed for expandability and a future design team to work wit
 
 Controls:
 
+F11: Full screen toggle
 W, A, S, D - Move forward, left, right, back
 Look - Mouse
 Space - Jump
